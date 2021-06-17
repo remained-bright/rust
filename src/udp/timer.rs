@@ -29,6 +29,7 @@ pub async fn boot(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) {
 }
 
 pub async fn timer(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) {
+  // 可能网络故障导致连接失败，所以每10秒尝试一次重新连接
   boot(socket, connecting).await;
   let mut interval = stream::interval(Duration::from_secs(10));
   while let Some(_) = interval.next().await {
