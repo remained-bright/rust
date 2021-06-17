@@ -1,0 +1,9 @@
+@$ = {{$dotenv url}}
+
+### test
+GET {{$}}
+
+### test
+POST {{$}}
+
+

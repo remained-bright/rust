@@ -1,0 +1,79 @@
+cargo-features = ["edition2021"]
+
+[profile.dev]
+split-debuginfo = "unpacked"
+
+[package]
+name = "rmw"
+authors = [ "rmw <i@rmw.link>" ]
+edition = "2021"
+version = "0.0.1"
+license = "AGPL-3.0-or-later"
+description="placeholder ; writing"
+
+[dependencies]
+tonic-web = { path = "lib/tonic/tonic-web" }
+tonic = { path = "lib/tonic/tonic" }
+static_init = {path="lib/static_init"}
+retainer = {path="lib/retainer"}
+blake3 = "0.3.8"
+chrono = "0.4.19"
+clap = "2.33.3"
+dirs = "3.0.2"
+fern = "0.6.0"
+log = "0.4.14"
+rand = "0.8.4"
+bytes = "1.0.1"
+async-tungstenite = "0.13.1"
+futures = "0.3.15"
+notify = "4.0.17"
+rust-ini = "0.17.0"
+lru_time_cache = "0.11.11"
+ttl_cache = "0.5.1"
+anyhow = "1.0.41"
+thiserror = "1.0.25"
+prost = "0.7.0"
+async-trait = "0.1.50"
+sdb = "0.0.4"
+#wickdb = {git="https://github.com/Fullstop000/wickdb.git", branch="master"}
+#base64 = "0.13.0"
+#blake3 = "0.3.7"
+#bytes = "1.0.1"
+#chrono = "0.4.19"
+#clap = "3.0.0-beta.2"
+#dirs = "3.0.1"
+#ed25519-dalek-blake2b = "1.0.2"
+#failure = "0.1.8"
+#fern = "0.6.0"
+#lazy_static = "1.4.0"
+#log = "0.4.14"
+#rand = "0.8.3"
+#zstd = "0.6.1"
+#machine-uid = "0.2.0"
+#seahash = "4.1.0"
+#indexmap = "1.6.1"
+#x25519-dalek = { version = "1.1.0", features = ["serde"] }
+#aes-gcm = "0.8.0"
+#sqlx = { version = "0.5.1", features = ["runtime-async-std-rustls","macros","sqlite"] }
+#hnsw = "0.6.1"
+#array-init = "1.0.0"
+#skiplist = "0.3.0"
+#igd = "0.12.0"
+#
+#[dependencies.async-std]
+#version = "1.9.0"
+#features = ["unstable","attributes"]
+
+
+[dependencies.async-std]
+version = "1.9.0"
+features = ["unstable","attributes","tokio1"]
+
+[build-dependencies]
+tonic-build = { features=["prost"], path="./lib/tonic/tonic-build"}
+
+#[dependencies.diesel]
+#diesel = "1.4.6"
+#features = ["sqlite"]
+#version = "1.4.6"
+#features = ["compression"]
