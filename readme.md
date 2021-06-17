@@ -8,6 +8,11 @@
 git clone --recurse-submodules -j8 git@github.com:rmw-link/rust.git
 ```
 
+升级所有子模块
+
+```
+git submodule update --recursive --remote
+```
 
 ## 编译备忘
 
