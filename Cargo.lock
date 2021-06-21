@@ -1599,9 +1599,9 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
 name = "sdb"
-version = "0.0.4"
+version = "0.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a070ed7cd85ebee1ccf352514c8c26751273d1fb70e31463ee276c9957929584"
+checksum = "bb40a4f9ffeacb911196bd4d8d6b1d62761e3d3cb58567e874ebc2fcc4957f0c"
 dependencies = [
  "sanakirja",
 ]
