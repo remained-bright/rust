@@ -38,6 +38,7 @@ sdb = "0.0.7"
 twox-hash = "1.6.0"
 ed25519-dalek-blake3 = "1.0.4"
 xxblake3 = "0.0.1"
+x25519-dalek = "1.1.1"
 #wickdb = {git="https://github.com/Fullstop000/wickdb.git", branch="master"}
 #base64 = "0.13.0"
 #blake3 = "0.3.7"

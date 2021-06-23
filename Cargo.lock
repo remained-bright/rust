@@ -1588,6 +1588,7 @@ dependencies = [
  "tonic-web",
  "ttl_cache",
  "twox-hash",
+ "x25519-dalek",
  "xxblake3",
 ]
 
