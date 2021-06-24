@@ -1,4 +1,5 @@
 //use crate::db::DB;
+use crate::ed25519::seed;
 use crate::{grpc, udp, ws};
 use log::{error, info};
 use rand::Rng;
@@ -19,6 +20,7 @@ pub fn init_sqlite() -> Result<()> {
 */
 
 pub async fn boot() {
+  seed();
   //init_sqlite().unwrap();
   //info!("> {:?}", std::env::current_exe().unwrap().parent().unwrap());
   let err = futures::join!(

@@ -5,6 +5,7 @@ mod r#macro;
 mod config;
 
 mod args;
+mod ed25519;
 mod file;
 mod grpc;
 mod udp;
