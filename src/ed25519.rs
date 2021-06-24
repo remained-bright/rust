@@ -39,7 +39,7 @@ pub fn seed() {
     let public: PublicKey = (&secret).into();
     n += 1;
     if n % 10000 == 0 {
-      println!("n = {} seed = {:?}", n, seed);
+      println!("{} : public {:?}", n, public);
     }
     if public.as_bytes()[..len] == PREFIX {
       println!("seed {:?}\npublic {:?}", seed, public.as_bytes());
