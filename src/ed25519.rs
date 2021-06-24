@@ -1,12 +1,9 @@
 use ed25519_dalek_blake3::{PublicKey, SecretKey};
 use rand_core::{OsRng, RngCore};
-use static_init::dynamic;
-use std::convert::TryInto;
 use std::mem::MaybeUninit;
 use std::time::Instant;
 
-#[dynamic]
-static PREFIX: [u8; 2] = "rm".as_bytes().try_into().unwrap();
+const PREFIX: [u8; 2] = [0, 0];
 
 struct ArrIncr {
   pos: usize,
@@ -32,8 +29,7 @@ impl Iterator for ArrIncr {
 }
 
 pub fn seed() {
-  let prefix = *PREFIX;
-  let len = prefix.len();
+  let len = PREFIX.len();
 
   let now = Instant::now();
   let mut n = 0;
@@ -45,8 +41,8 @@ pub fn seed() {
     if n % 10000 == 0 {
       println!("n = {} seed = {:?}", n, seed);
     }
-    if public.as_bytes()[..len] == prefix {
-      println!("public {:?}", public.as_bytes()[..len] == prefix);
+    if public.as_bytes()[..len] == PREFIX {
+      println!("seed {:?}\npublic {:?}", seed, public.as_bytes());
       break;
     }
   }
