@@ -16,10 +16,15 @@ pub fn seed() {
 
   let mut secret_key;
   let mut public_key: PublicKey;
+  let mut n = 0;
 
   loop {
     secret_key = SecretKey::generate(&mut rng);
     public_key = (&secret_key).into();
+    n += 1;
+    if n % 10000 == 0 {
+      println!("n = {}", n);
+    }
     if public_key.as_bytes()[..len] == prefix {
       break;
     }
