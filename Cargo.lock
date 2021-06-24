@@ -1577,6 +1577,7 @@ dependencies = [
  "lru_time_cache",
  "notify",
  "prost",
+ "rand 0.8.4",
  "rand_core 0.6.3",
  "retainer",
  "rust-ini",

@@ -2,6 +2,7 @@
 use crate::ed25519::seed;
 use crate::{grpc, udp, ws};
 use log::{error, info};
+use rand::{thread_rng, Rng};
 use std::net::UdpSocket;
 
 macro_rules! listen {
@@ -26,15 +27,23 @@ pub async fn boot() {
   let err = futures::join!(
     listen!(udp, {
       let ip = "0.0.0.0";
+      let mut rng = thread_rng();
+
       let port = {
-        let socket = UdpSocket::bind(format!("{}:0", ip)).unwrap();
-        socket.local_addr().unwrap().port()
+        let mut p: u16 = rng.gen_range(3000..9000);
+        loop {
+          if let Ok(_) = UdpSocket::bind(format!("{}:{}", ip, p)) {
+            break p;
+          } else {
+            p += 1;
+          }
+        }
       };
 
       format!("{}:{}", ip, port)
     }),
-    listen!(ws, { "0.0.0.0:9980".to_string() }),
-    listen!(grpc, { "0.0.0.0:9981".to_string() }),
+    listen!(grpc, { "0.0.0.0:2080".to_string() }),
+    listen!(ws, { "0.0.0.0:2081".to_string() }),
   );
   error!("{:?}", err);
 }
