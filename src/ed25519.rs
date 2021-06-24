@@ -36,20 +36,17 @@ pub fn seed() {
   let len = prefix.len();
 
   let now = Instant::now();
-
-  let mut public_key: PublicKey;
   let mut n = 0;
-  let mut secret;
 
   for seed in ArrIncr::new() {
-    secret = SecretKey::from_bytes(&seed).unwrap();
-    public_key = (&secret).into();
+    let secret = SecretKey::from_bytes(&seed).unwrap();
+    let public: PublicKey = (&secret).into();
     n += 1;
     if n % 10000 == 0 {
       println!("n = {} seed = {:?}", n, seed);
     }
-    if public_key.as_bytes()[..len] == prefix {
-      println!("public {:?}", public_key.as_bytes()[..len] == prefix);
+    if public.as_bytes()[..len] == prefix {
+      println!("public {:?}", public.as_bytes()[..len] == prefix);
       break;
     }
   }
