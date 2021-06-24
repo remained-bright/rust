@@ -13,19 +13,23 @@ pub fn seed() {
   let now = Instant::now();
   let mut n = 0;
 
+  let mut secret;
+  let mut public: PublicKey;
+
   loop {
     let seed = rand::<32>();
 
-    let secret = SecretKey::from_bytes(&seed).unwrap();
-    let public: PublicKey = (&secret).into();
+    secret = SecretKey::from_bytes(&seed).unwrap();
+    public = (&secret).into();
 
     //let (_, body, _) = unsafe { public_bytes.align_to::<u32>() };
     //println!("encode bytes: {}", body.len());
 
     n += 1;
-    if n % 10000 == 0 {
-      println!("{} : public {:?}", n / 10000, public.as_bytes());
+    if n % 50000 == 0 {
+      println!("{}", n / 50000);
     }
+
     let bytes = public.as_bytes();
     if bytes[0] == 0 && bytes[1] == 0 {
       println!("seed {:?}\npublic {:?}", seed, public.as_bytes());
