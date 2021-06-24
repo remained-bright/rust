@@ -1583,6 +1583,7 @@ dependencies = [
  "rust-ini",
  "sdb",
  "static_init",
+ "stream-vbyte",
  "thiserror",
  "tonic",
  "tonic-build",
@@ -1753,6 +1754,15 @@ dependencies = [
  "proc-macro2 1.0.27",
  "quote 1.0.9",
  "syn 1.0.73",
+]
+
+[[package]]
+name = "stream-vbyte"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "14cee845e47def109ad3b3600b17c75fbfb5fa23d0e140c1d24bfb8370fe72a6"
+dependencies = [
+ "byteorder",
 ]
 
 [[package]]
