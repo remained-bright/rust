@@ -1,72 +1,58 @@
-use ed25519_dalek_blake3::{Keypair, PublicKey, SecretKey};
+use ed25519_dalek_blake3::{PublicKey, SecretKey};
 use rand_core::{OsRng, RngCore};
 use static_init::dynamic;
 use std::convert::TryInto;
-use std::time::{Duration, Instant};
+use std::mem::MaybeUninit;
+use std::time::Instant;
 
 #[dynamic]
 static PREFIX: [u8; 2] = "rm".as_bytes().try_into().unwrap();
 
 struct ArrIncr {
   pos: usize,
-  begin: u8,
-  now: [u8; 32],
+  pub arr: [u8; 32],
 }
 
 impl ArrIncr {
-  /*
   pub fn new() -> Self {
-    let mut arr = [0u8; 32];
+    let mut arr: [u8; 32] = unsafe { MaybeUninit::uninit().assume_init() };
     (OsRng {}).fill_bytes(&mut arr[..]);
-
-    //  ArrIncr {}
+    ArrIncr { pos: 0, arr: arr }
   }
-  */
 }
 
-pub fn arr_incr(seed: &mut [u8; 32]) {
-  let mut i = seed.len();
-
-  while i != 0 {
-    i -= 1;
-    let n = seed[i];
-    if n == 255 {
-      seed[i] = 0;
-    } else {
-      seed[i] = n + 1;
-      return;
-    }
+impl Iterator for ArrIncr {
+  type Item = [u8; 32];
+  fn next(&mut self) -> Option<[u8; 32]> {
+    let pos = self.pos;
+    self.arr[pos] = u8::wrapping_add(self.arr[pos], 1);
+    self.pos = (pos + 1) % self.arr.len();
+    Some(self.arr)
   }
 }
 
 pub fn seed() {
-  let mut rng = OsRng {};
   let prefix = *PREFIX;
   let len = prefix.len();
 
   let now = Instant::now();
 
-  let secret_key = SecretKey::generate(&mut rng);
-  let seed = secret_key.as_bytes();
   let mut public_key: PublicKey;
   let mut n = 0;
-  println!("seed {:?}", seed);
-  /*
-  loop {
-    let secret = SecretKey::from_bytes(seed).unwrap();
+  let mut secret;
+
+  for seed in ArrIncr::new() {
+    secret = SecretKey::from_bytes(&seed).unwrap();
     public_key = (&secret).into();
     n += 1;
-    break;
     if n % 10000 == 0 {
-      println!("n = {}", n);
+      println!("n = {} seed = {:?}", n, seed);
     }
     if public_key.as_bytes()[..len] == prefix {
+      println!("public {:?}", public_key.as_bytes()[..len] == prefix);
       break;
     }
   }
 
   println!("cost time {}", now.elapsed().as_secs());
-
-  println!("public {:?}", public_key.as_bytes()[..len] == prefix);
-  */
 }
