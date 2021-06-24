@@ -1,4 +1,4 @@
-use ed25519_dalek_blake3::{PublicKey, SecretKey};
+use ed25519_dalek_blake3::{PublicKey, SecretKey, PUBLIC_KEY_LENGTH};
 use rand_core::{OsRng, RngCore};
 use std::mem::MaybeUninit;
 use std::time::Instant;
@@ -39,9 +39,9 @@ pub fn seed() {
     let public: PublicKey = (&secret).into();
     n += 1;
     if n % 10000 == 0 {
-      println!("{} : public {:?}", n, public);
+      println!("{} : public {:?}", n, public.as_bytes());
     }
-    if public.as_bytes()[..len] == PREFIX {
+    if public.as_bytes()[PUBLIC_KEY_LENGTH - len..] == PREFIX {
       println!("seed {:?}\npublic {:?}", seed, public.as_bytes());
       break;
     }
