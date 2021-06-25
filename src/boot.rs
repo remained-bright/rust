@@ -26,6 +26,7 @@ pub async fn boot() {
   let encoded = VarByteString::from(original);
   println!("The text is {}", encoded);
   println!("UTF-8 took {} bytes", original.as_bytes().len());
+  println!("UTF-8 took {} bytes", original);
   println!(
     "Internal structure is {} {}",
     encoded.buffer_len(),
