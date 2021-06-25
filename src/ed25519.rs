@@ -10,16 +10,18 @@ use std::time::Instant;
 
 struct Seed {
   pub arr: [u8; 32],
+  rng: OsRng,
 }
 
 impl Seed {
   pub fn new() -> Self {
     Self {
       arr: unsafe { MaybeUninit::uninit().assume_init() },
+      rng: OsRng {},
     }
   }
   pub fn next(&mut self) -> &[u8] {
-    (OsRng {}).fill_bytes(&mut self.arr[..]);
+    self.rng.fill_bytes(&mut self.arr[..]);
     &self.arr
   }
 }
