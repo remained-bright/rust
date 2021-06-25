@@ -1,3 +1,5 @@
+#![feature(ptr_internals)]
+
 #[macro_use]
 mod r#macro;
 
