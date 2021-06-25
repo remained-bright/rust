@@ -44,11 +44,13 @@ pub fn _seed(
       //println!("encode bytes: {}", body.len());
 
       n += 1;
-      if n % 100 == 0 {
+      if n % 10 == 0 {
         if *stop {
           return;
         }
-        t_count_s.send(None).unwrap();
+        if n % 10000 == 0 {
+          t_count_s.send(None).unwrap();
+        }
       }
 
       let bytes = public.as_bytes();
@@ -87,9 +89,7 @@ pub fn seed() {
   let mut count = 0;
   for _ in count_r {
     count += 1;
-    if count % 100 == 0 {
-      println!("count = {}", count / 100);
-    }
+    println!("count = {}", count);
   }
 
   let seed = seed_r.recv().unwrap();
