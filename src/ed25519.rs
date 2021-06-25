@@ -1,12 +1,22 @@
-use ed25519_dalek_blake3::{PublicKey, SecretKey};
+use ed25519_dalek_blake3::{PublicKey, SecretKey, PUBLIC_KEY_LENGTH};
 use rand_core::{OsRng, RngCore};
 use std::mem::MaybeUninit;
 use std::time::Instant;
 
-pub fn rand<const N: usize>() -> [u8; N] {
-  let mut arr: [u8; N] = unsafe { MaybeUninit::uninit().assume_init() };
-  (OsRng {}).fill_bytes(&mut arr[..]);
-  arr
+struct Seed<const N: usize> {
+  arr: [u8; N],
+}
+
+impl<const N: usize> Seed<N> {
+  pub fn new() -> Self {
+    Self {
+      arr: unsafe { MaybeUninit::uninit().assume_init() },
+    }
+  }
+  pub fn next(&mut self) -> [u8; N] {
+    (OsRng {}).fill_bytes(&mut self.arr[..]);
+    self.arr
+  }
 }
 
 pub fn seed() {
@@ -16,10 +26,13 @@ pub fn seed() {
   let mut secret;
   let mut public: PublicKey;
 
-  loop {
-    let seed = rand::<32>();
+  println!("首次运行，生成秘钥中，请稍等 ···");
 
-    secret = SecretKey::from_bytes(&seed).unwrap();
+  let mut seed = Seed::<32>::new();
+
+  loop {
+    let s = seed.next();
+    secret = SecretKey::from_bytes(&s).unwrap();
     public = (&secret).into();
 
     //let (_, body, _) = unsafe { public_bytes.align_to::<u32>() };
@@ -31,8 +44,8 @@ pub fn seed() {
     }
 
     let bytes = public.as_bytes();
-    if bytes[0] == 0 && bytes[1] == 0 {
-      println!("seed {:?}\npublic {:?}", seed, public.as_bytes());
+    if bytes[PUBLIC_KEY_LENGTH - 1] == 0 && bytes[PUBLIC_KEY_LENGTH - 2] == 0 {
+      println!("seed {:?}\npublic {:?}", s, public.as_bytes());
       break;
     }
   }

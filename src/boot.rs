@@ -4,6 +4,7 @@ use crate::{grpc, udp, ws};
 use log::{error, info};
 use rand::{thread_rng, Rng};
 use std::net::UdpSocket;
+use var_byte_str::VarByteString;
 
 macro_rules! listen {
   ($func:ident, $default: block) => {{
@@ -21,6 +22,13 @@ pub fn init_sqlite() -> Result<()> {
 */
 
 pub async fn boot() {
+  use var_byte_str::VarByteString;
+  let original = "Some really long text and may contains some different language like \"คำภาษาไทยที่ใช้พื้นที่เยอะกว่าเนื้อความภาษาอังกฤษเสียอีก\".";
+  let encoded = VarByteString::from(original);
+  println!("The text is {}", encoded);
+  println!("UTF-8 took {} bytes", original.as_bytes().len());
+  println!("Internal structure is {:?}", encoded);
+
   seed();
   //init_sqlite().unwrap();
   //info!("> {:?}", std::env::current_exe().unwrap().parent().unwrap());
