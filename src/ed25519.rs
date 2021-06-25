@@ -1,6 +1,7 @@
 use ed25519_dalek_blake3::{PublicKey, SecretKey, PUBLIC_KEY_LENGTH};
 use rand_core::{OsRng, RngCore};
 use std::convert::Into;
+use std::io::prelude::*;
 use std::mem::MaybeUninit;
 use std::ptr::Unique;
 use std::sync::mpsc;
@@ -48,14 +49,13 @@ pub fn _seed(
         if *stop {
           return;
         }
-        if n % 2000 == 0 {
+        if n % 500 == 0 {
           count_s.send(None).unwrap();
         }
       }
 
       let bytes = public.as_bytes();
       if bytes[PUBLIC_KEY_LENGTH - 1] == 0 && bytes[PUBLIC_KEY_LENGTH - 2] == 0 {
-        println!("seed {:?}\npublic {:?}", s, public.as_bytes());
         seed_s.send(seed.arr).unwrap();
         *stop = true;
         return;
@@ -89,10 +89,12 @@ pub fn seed() {
   let mut count = 0;
   for _ in count_r {
     count += 1;
-    if count % 5 == 0 {
-      print!("{} ", count / 5);
+    if count % thread_num == 0 {
+      print!(".");
+      std::io::stdout().flush();
     }
   }
+  println!("");
 
   let seed = seed_r.recv().unwrap();
   unsafe {
