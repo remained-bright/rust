@@ -24,8 +24,8 @@ impl Seed {
 }
 
 pub fn _seed(
-  t_seed_s: mpsc::Sender<[u8; 32]>,
-  t_count_s: mpsc::Sender<Option<()>>,
+  seed_s: mpsc::Sender<[u8; 32]>,
+  count_s: mpsc::Sender<Option<()>>,
   stop: Unique<bool>,
 ) {
   let stop = unsafe { &mut *stop.as_ptr() };
@@ -49,14 +49,14 @@ pub fn _seed(
           return;
         }
         if n % 2000 == 0 {
-          t_count_s.send(None).unwrap();
+          count_s.send(None).unwrap();
         }
       }
 
       let bytes = public.as_bytes();
       if bytes[PUBLIC_KEY_LENGTH - 1] == 0 && bytes[PUBLIC_KEY_LENGTH - 2] == 0 {
         println!("seed {:?}\npublic {:?}", s, public.as_bytes());
-        t_seed_s.send(seed.arr).unwrap();
+        seed_s.send(seed.arr).unwrap();
         *stop = true;
         return;
       }
@@ -90,7 +90,7 @@ pub fn seed() {
   for _ in count_r {
     count += 1;
     if count % 5 == 0 {
-      println!("count = {}", count / 5);
+      print!("{} ", count / 5);
     }
   }
 
