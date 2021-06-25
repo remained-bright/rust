@@ -21,7 +21,7 @@ impl Seed {
     }
   }
   pub fn next(&mut self) -> &[u8] {
-    self.rng.fill_bytes(&mut self.arr[..]);
+    self.rng.fill_bytes(&mut self.arr);
     &self.arr
   }
 }
