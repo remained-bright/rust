@@ -48,7 +48,7 @@ pub fn _seed(
         if *stop {
           return;
         }
-        if n % 10000 == 0 {
+        if n % 2000 == 0 {
           t_count_s.send(None).unwrap();
         }
       }
@@ -89,7 +89,9 @@ pub fn seed() {
   let mut count = 0;
   for _ in count_r {
     count += 1;
-    println!("count = {}", count);
+    if count % 5 == 0 {
+      println!("count = {}", count / 5);
+    }
   }
 
   let seed = seed_r.recv().unwrap();
