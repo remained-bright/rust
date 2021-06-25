@@ -24,11 +24,7 @@ impl Seed {
   }
 }
 
-pub fn _seed(
-  seed_s: mpsc::Sender<[u8; 32]>,
-  count_s: mpsc::Sender<Option<()>>,
-  stop: Unique<bool>,
-) {
+pub fn _seed(c: mpsc::Sender<Option<[u8; 32]>>, stop: Unique<bool>) {
   let stop = unsafe { &mut *stop.as_ptr() };
   thread::spawn(move || {
     let mut seed = Seed::new();
@@ -50,14 +46,14 @@ pub fn _seed(
           return;
         }
         if n % 500 == 0 {
-          count_s.send(None).unwrap();
+          c.send(None).unwrap();
         }
       }
 
       let bytes = public.as_bytes();
       if bytes[PUBLIC_KEY_LENGTH - 1] == 0 && bytes[PUBLIC_KEY_LENGTH - 2] == 0 {
-        seed_s.send(seed.arr).unwrap();
         *stop = true;
+        c.send(Some(seed.arr)).unwrap();
         return;
       }
     }
@@ -70,7 +66,6 @@ pub fn seed() {
   println!("首次运行，生成秘钥中，请稍等 ···");
 
   let (seed_s, seed_r) = mpsc::channel();
-  let (count_s, count_r) = mpsc::channel();
 
   // Rust：线程间共享数据 https://zhuanlan.zhihu.com/p/37760452
   let stop = Unique::from(Box::leak(Box::new(false)));
@@ -78,29 +73,31 @@ pub fn seed() {
   let thread_num = num_cpus::get() - 1;
 
   for _ in 1..thread_num {
-    _seed(
-      mpsc::Sender::clone(&seed_s),
-      mpsc::Sender::clone(&count_s),
-      stop,
-    )
+    _seed(mpsc::Sender::clone(&seed_s), stop)
   }
-  _seed(seed_s, count_s, stop);
+  _seed(seed_s, stop);
 
   let mut count = 0;
-  for _ in count_r {
-    count += 1;
-    if count % thread_num == 0 {
-      print!(".");
-      std::io::stdout().flush();
+  for i in seed_r {
+    match i {
+      None => {
+        count += 1;
+        if count % thread_num == 0 {
+          print!(".");
+          std::io::stdout().flush().unwrap();
+        }
+      }
+      Some(seed) => {
+        println!("");
+
+        unsafe {
+          Box::from_raw(stop.as_ptr());
+        }
+
+        println!("seed = {:?}", seed);
+        println!("cost time {}", now.elapsed().as_secs());
+        return;
+      }
     }
   }
-  println!("");
-
-  let seed = seed_r.recv().unwrap();
-  unsafe {
-    Box::from_raw(stop.as_ptr());
-  }
-
-  println!("seed = {:?}", seed);
-  println!("cost time {}", now.elapsed().as_secs());
 }
