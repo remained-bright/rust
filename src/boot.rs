@@ -22,12 +22,15 @@ pub fn init_sqlite() -> Result<()> {
 */
 
 pub async fn boot() {
-  use var_byte_str::VarByteString;
-  let original = "Some really long text and may contains some different language like \"คำภาษาไทยที่ใช้พื้นที่เยอะกว่าเนื้อความภาษาอังกฤษเสียอีก\".";
+  let original = "前天下午，一边在家欣赏梅艳芳的《女人花》，一边观看大华、歌尔、蓝标等长牛股的跳水表演。想起曾经风华绝代的梅姑年方40就香消玉殒，看着数年前一骑绝尘的大华和歌尔如今股价节节败退，不由心生感慨，于是写下这样一段文字：\"由来只有新人笑，有谁听到旧人哭\"，一句简单地歌词，很贴切地描绘出近期的市场特征。成长股犹如女明星，大部分吃的都是青春饭，如果既年轻又漂亮，再配上些才艺，就很容易受追捧。一旦年暮色衰，哪怕你再有实力，也很难有巨大的市场号召力。投资成长股，跟演艺公司培养女星似有异曲同工之妙";
   let encoded = VarByteString::from(original);
   println!("The text is {}", encoded);
   println!("UTF-8 took {} bytes", original.as_bytes().len());
-  println!("Internal structure is {:?}", encoded);
+  println!(
+    "Internal structure is {} {}",
+    encoded.buffer_len(),
+    encoded.sign_len()
+  );
 
   seed();
   //init_sqlite().unwrap();
