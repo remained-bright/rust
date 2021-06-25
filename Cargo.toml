@@ -42,6 +42,7 @@ rand_core = "0.6.3"
 rand = "0.8.4"
 stream-vbyte = "0.3.2"
 var_byte_str = "0.1.2"
+rayon = "1.5.1"
 #wickdb = {git="https://github.com/Fullstop000/wickdb.git", branch="master"}
 #base64 = "0.13.0"
 #blake3 = "0.3.7"
