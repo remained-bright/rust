@@ -24,12 +24,11 @@ impl Seed {
 }
 
 pub fn _seed(
-  id: usize,
   t_seed_s: mpsc::Sender<[u8; 32]>,
   t_count_s: mpsc::Sender<Option<()>>,
   stop: Unique<bool>,
 ) {
-  let stop = unsafe { (&mut *stop.as_ptr()) };
+  let stop = unsafe { &mut *stop.as_ptr() };
   thread::spawn(move || {
     let mut seed = Seed::new();
     let mut secret;
@@ -48,9 +47,6 @@ pub fn _seed(
       if n % 100 == 0 {
         if *stop {
           return;
-        }
-        if n % 10000 == 0 {
-          println!("{} > {}", id, n / 10000);
         }
         t_count_s.send(None).unwrap();
       }
@@ -74,18 +70,19 @@ pub fn seed() {
   let (seed_s, seed_r) = mpsc::channel();
   let (count_s, count_r) = mpsc::channel();
 
+  // Rust：线程间共享数据 https://zhuanlan.zhihu.com/p/37760452
   let stop = Unique::from(Box::leak(Box::new(false)));
 
-  let thread_num = 3;
-  for id in 0..thread_num {
+  let thread_num = num_cpus::get() - 1;
+
+  for _ in 1..thread_num {
     _seed(
-      id,
       mpsc::Sender::clone(&seed_s),
       mpsc::Sender::clone(&count_s),
       stop,
     )
   }
-  _seed(thread_num, seed_s, count_s, stop);
+  _seed(seed_s, count_s, stop);
 
   let mut count = 0;
   for _ in count_r {
