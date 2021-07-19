@@ -7,3 +7,6 @@
 [submodule "lib/persy"]
 	path = lib/persy
 	url = git@gitlab.com:gcxfd/persy.git
+[submodule "lib/tonic"]
+	path = lib/tonic
+	url = git@github.com:hyperium/tonic.git
