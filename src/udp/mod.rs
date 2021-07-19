@@ -16,7 +16,10 @@ pub async fn listen(addr: String) -> Result<()> {
   let err = futures::join!(
     timer(&socket, &connecting),
     recv_from(&socket, &connecting),
-    connecting.monitor(2, 1, Duration::from_secs(3)),
+    connecting.monitor(2, 1, Duration::from_secs(3), &|keys| println!(
+      "remove {:?}",
+      keys
+    )),
   );
   error!("{:?}", err);
   Ok(())
