@@ -1638,6 +1638,7 @@ dependencies = [
  "async-std",
  "async-trait",
  "async-tungstenite",
+ "base64",
  "blake3",
  "bytes",
  "chrono",
