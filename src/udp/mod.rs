@@ -18,12 +18,10 @@ pub async fn listen(addr: String) -> Result<()> {
     timer(&socket, &connecting),
     recv_from(&socket, &connecting),
     connecting.monitor(2, 1, Duration::from_secs(3), &|kvli| {
-      if kvli.len() > 0 {
-        if now::sec() - unsafe { CONNECTED_TIME } <= 6 {
-          //6秒内有过成功的连接
-          for (k, v) in kvli {
-            println!("{:?} {:?}", k, v)
-          }
+      if kvli.len() > 0 && now::sec() - unsafe { CONNECTED_TIME } <= 6 {
+        //6秒内有过成功的连接
+        for (k, v) in kvli {
+          println!("{:?} {:?}", k, v)
         }
       }
     }),
