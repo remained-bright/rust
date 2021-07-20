@@ -53,13 +53,15 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
         match src {
           V4(src) => {
             if n == 0 {
-              match connecting.expiration(&src.to_bytes()).await {
+              let key = &src.to_bytes();
+              match connecting.expiration(key).await {
                 Some(instant) => {
                   info!(
                     "ip pong {} connecting elapsed {:?}",
                     src,
                     (instant - *MSL).elapsed()
                   );
+                  connecting.remove(key).await;
                 }
                 None => {}
               }
