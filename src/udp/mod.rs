@@ -4,7 +4,6 @@ mod timer;
 use crate::udp::recv_from::{recv_from, CONNECTED_TIME};
 use crate::udp::timer::timer;
 use crate::util::now;
-use crate::var::msl::MSL;
 use anyhow::Result;
 use async_std::net::UdpSocket;
 use log::error;
@@ -19,9 +18,12 @@ pub async fn listen(addr: String) -> Result<()> {
     timer(&socket, &connecting),
     recv_from(&socket, &connecting),
     connecting.monitor(2, 1, Duration::from_secs(3), &|kvli| {
-      dbg!(now::sec() - unsafe { CONNECTED_TIME });
-      for (k, v) in kvli {
-        println!("{:?} {:?}", k, v)
+      if kvli.len() > 0 {
+        if now::sec() - unsafe { CONNECTED_TIME } <= 6 {
+          for (k, v) in kvli {
+            println!("{:?} {:?}", k, v)
+          }
+        }
       }
     }),
   );
