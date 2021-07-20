@@ -1,4 +1,5 @@
 use crate::udp::addr_to_bytes::ToBytes;
+use crate::util::now;
 use crate::var::cmd::CMD;
 use crate::var::msl::MSL;
 use anyhow::Result;
@@ -31,6 +32,9 @@ pub static MTU: usize = {
   }
   mtu
 };
+
+pub static mut CONNECTED_TIME: u64 = 0;
+
 pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> Result<()> {
   macro_rules! send_to {
     ($val:expr, $addr:expr) => {
@@ -62,6 +66,8 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                     (instant - *MSL).elapsed()
                   );
                   connecting.remove(key).await;
+
+                  unsafe { CONNECTED_TIME = now::sec() };
                 }
                 None => {}
               }
