@@ -13,9 +13,16 @@ fn error_tip(ip: &str) {
 }
 
 pub async fn boot(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) {
-  for (_, li) in TX.range::<u64, [u8; 6], _>(db::time_ipv4, ..).unwrap() {
+  for (n, (_, li)) in TX
+    .range::<u64, [u8; 6], _>(db::time_ipv4, ..)
+    .unwrap()
+    .enumerate()
+  {
     for ipv4 in li {
-      println!("ipv4 {:?}", bytes_to_addr::v4(ipv4));
+      println!("{} : ipv4 {:?}", n, bytes_to_addr::v4(ipv4));
+    }
+    if n >= 128 {
+      return;
     }
   }
 
