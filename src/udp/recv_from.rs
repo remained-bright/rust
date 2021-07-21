@@ -1,5 +1,5 @@
 use crate::db::ipv4_insert;
-use crate::udp::addr_to_bytes::ToBytes;
+use crate::util::addr_to_bytes::ToBytes;
 use crate::util::now;
 use crate::var::cmd::CMD;
 use crate::var::msl::MSL;

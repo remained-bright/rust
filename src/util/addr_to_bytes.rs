@@ -1,4 +1,5 @@
 use std::net::SocketAddrV4;
+
 //use bytes::{BufMut, Bytes, BytesMut};
 
 pub trait ToBytes<const N: usize> {
@@ -12,6 +13,7 @@ impl ToBytes<6> for SocketAddrV4 {
     [o[0], o[1], o[2], o[3], p[0], p[1]]
   }
 }
+
 /*
 impl ToBytes<10> for SocketAddrV6 {
   fn to_bytes(&self) -> [u8; 10] {

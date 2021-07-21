@@ -6,7 +6,7 @@ use static_init::dynamic;
 use std::path::{Path, PathBuf};
 
 #[dynamic]
-static DB_FILE: PathBuf = Path::new(&*DIR).join("rmw.persy");
+pub static DB_FILE: PathBuf = Path::new(&*DIR).join("rmw.persy");
 
 #[allow(non_upper_case_globals)]
 pub mod str {
@@ -15,7 +15,7 @@ pub mod str {
 }
 
 #[dynamic]
-static TX: Persy = {
+pub static TX: Persy = {
   Persy::open_or_create_with(&*DB_FILE, Config::new(), |p| {
     let mut tx = p.begin()?;
     tx.create_index::<[u8; 6], u64>(str::ipv4_time, ValueMode::Replace)?;

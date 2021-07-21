@@ -1,4 +1,3 @@
-pub mod addr_to_bytes;
 mod recv_from;
 mod timer;
 use crate::udp::recv_from::{recv_from, CONNECTED_TIME};
