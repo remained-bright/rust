@@ -32,7 +32,6 @@ pub fn ipv4_insert(addr: [u8; 6]) -> Result<()> {
   let mut tx = TX.begin()?;
 
   if let Some(_) = tx.get::<[u8; 6], u64>(str::ipv4_time, &addr)?.next() {
-    println!("{:?} exists", addr);
     return Ok(());
   }
 
