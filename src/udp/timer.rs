@@ -40,7 +40,7 @@ pub async fn boot(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) {
   }
 
   for ip in (config_get!(boot_ipv4, {
-    "47.104.79.244:32342 54.177.127.37:29040".to_string()
+    "47.104.79.244:32342 54.177.127.37:8616".to_string()
   }))
   .split(' ')
   {

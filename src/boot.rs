@@ -30,7 +30,7 @@ pub async fn boot() {
       let mut rng = thread_rng();
 
       let port = {
-        let mut p: u16 = rng.gen_range(1025..10000);
+        let mut p: u16 = rng.gen_range(1025..20000);
         loop {
           if let Ok(_) = UdpSocket::bind(format!("{}:{}", ip, p)) {
             break p;
