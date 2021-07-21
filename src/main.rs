@@ -7,6 +7,7 @@ mod r#macro;
 mod config;
 
 mod args;
+mod db;
 mod ed25519;
 mod file;
 mod grpc;
