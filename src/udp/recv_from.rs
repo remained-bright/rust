@@ -68,7 +68,7 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                     (instant - *MSL).elapsed()
                   );
                   connecting.remove(&key).await;
-                  ipv4_insert(key).unwrap_or_else(|err| error!("ipv4_insert {:?}", err));
+                  ipv4_insert(key)?;
 
                   unsafe { CONNECTED_TIME = now::sec() };
                 }

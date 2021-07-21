@@ -27,17 +27,17 @@ static TX: Persy = {
   .unwrap()
 };
 
-pub fn ipv4_insert(addr: [u8; 6]) -> Result<()> {
+pub fn ipv4_insert(addr: [u8; 6]) -> Result<bool> {
   let now = now::sec();
   let mut tx = TX.begin()?;
 
-  if let Some(_) = tx.one::<[u8; 6], u64>(str::ipv4_time, &addr)? {
-    return Ok(());
+  if None != tx.one::<_, u64>(str::ipv4_time, &addr)? {
+    return Ok(false);
   }
 
   tx.put(str::ipv4_time, addr, now)?;
   tx.put(str::time_ipv4, now, addr)?;
 
   tx.commit()?;
-  Ok(())
+  Ok(true)
 }
