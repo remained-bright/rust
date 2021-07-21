@@ -2,11 +2,11 @@ pub fn init() {
   fern::Dispatch::new()
     .format(|out, message, record| {
       out.finish(format_args!(
-        "{}\t{}.{}\t{}",
-        message,
-        record.target(),
-        record.level(),
+        "{} {} {}\n{}\n",
         chrono::Local::now().format("%Y-%m-%d %H:%M:%S"),
+        record.level(),
+        record.target(),
+        message,
       ))
     })
     .level(log::LevelFilter::Warn)
