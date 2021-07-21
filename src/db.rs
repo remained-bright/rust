@@ -31,7 +31,7 @@ pub fn ipv4_insert(addr: [u8; 6]) -> Result<()> {
   let now = now::sec();
   let mut tx = TX.begin()?;
 
-  if let Some(_) = tx.get::<[u8; 6], u64>(str::ipv4_time, &addr)?.next() {
+  if let Some(_) = tx.one::<[u8; 6], u64>(str::ipv4_time, &addr)? {
     return Ok(());
   }
 
