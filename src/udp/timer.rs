@@ -2,12 +2,9 @@ use crate::udp::addr_to_bytes::ToBytes;
 use crate::var::cmd::CMD;
 use crate::var::msl::MSL;
 use async_std::net::UdpSocket;
-use async_std::prelude::*;
-use async_std::stream;
-use log::{error, info};
+use log::info;
 use retainer::Cache;
 use std::net::SocketAddrV4;
-use std::time::Duration;
 
 pub async fn boot(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) {
   for ip in (config_get!(boot_ipv4, {

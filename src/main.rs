@@ -22,8 +22,6 @@ mod ws;
 mod boot;
 mod init;
 
-use log::info;
-
 #[async_std::main]
 async fn main() {
   init::init();

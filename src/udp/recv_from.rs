@@ -1,3 +1,4 @@
+use crate::db::ipv4_insert;
 use crate::udp::addr_to_bytes::ToBytes;
 use crate::util::now;
 use crate::var::cmd::CMD;
@@ -44,6 +45,7 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
 
   let mut input = BytesMut::new();
   input.resize(*MTU, 0);
+
   loop {
     match socket.recv_from(&mut input).await {
       Err(err) => error!("{:?}", err),
@@ -57,15 +59,16 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
         match src {
           V4(src) => {
             if n == 0 {
-              let key = &src.to_bytes();
-              match connecting.expiration(key).await {
+              let key = src.to_bytes();
+              match connecting.expiration(&key).await {
                 Some(instant) => {
                   info!(
                     "ip pong {} connecting elapsed {:?}",
                     src,
                     (instant - *MSL).elapsed()
                   );
-                  connecting.remove(key).await;
+                  connecting.remove(&key).await;
+                  ipv4_insert(key).unwrap_or_else(|err| error!("ipv4_insert {:?}", err));
 
                   unsafe { CONNECTED_TIME = now::sec() };
                 }
