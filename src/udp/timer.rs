@@ -21,7 +21,7 @@ pub async fn boot(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) {
     for ipv4 in li {
       println!("{} : ipv4 {:?}", n, bytes_to_addr::v4(ipv4));
     }
-    if n >= 128 {
+    if n == 128 {
       return;
     }
   }
