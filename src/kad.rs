@@ -12,6 +12,20 @@ struct Kad {
   bucket: SmallVec<[SmallVec<[Node; 16]>; 64]>,
 }
 
+pub fn distance(a: [u8; 32], b: [u8; 32]) {
+  let mut count = 0;
+  for (i, j) in a.zip(b) {
+    if i == j {
+      count += 8;
+    } else {
+      break;
+    }
+  }
+}
+
+// leading_zeros
+//
+
 impl Kad {
   pub fn add(node: Node) -> bool {
     let mut distance = 0;

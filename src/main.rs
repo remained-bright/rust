@@ -1,4 +1,5 @@
 #![feature(ptr_internals)]
+#![feature(array_zip)]
 
 #[macro_use]
 mod r#macro;
