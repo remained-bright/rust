@@ -10,3 +10,6 @@
 [submodule "lib/tonic"]
 	path = lib/tonic
 	url = git@github.com:hyperium/tonic.git
+[submodule "lib/rust-igd"]
+	path = lib/rust-igd
+	url = git@github.com:rmw-link/rust-igd.git

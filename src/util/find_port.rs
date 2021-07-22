@@ -10,7 +10,7 @@ pub fn port_available(port: u16) -> bool {
 
 pub fn find_port() -> u16 {
   let mut rng = thread_rng();
-  let p: u16 = rng.gen_range(9001..10000);
+  let p: u16 = rng.gen_range(9001..30000);
   (p..65535)
     .find(|port| port_available(*port))
     .expect("no udp port available")
