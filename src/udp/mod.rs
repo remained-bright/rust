@@ -20,21 +20,19 @@ static DURATION: u64 = 3;
 #[dynamic]
 static EXPIRE: u64 = *DURATION + (*MSL).as_secs() + 1;
 
-async fn upnp_daemon(port: u16) {
-  if config_get!(upnp, { true.to_string() }).parse().unwrap() {
-    upnp::upnp_daemon("rmw", port).await
-  }
-}
-
 pub async fn listen(addr: String) -> Result<()> {
   let connecting = Cache::<[u8; 6], ()>::new();
-
   let socket = UdpSocket::bind(addr).await?;
 
   println!("{:?}", socket.local_addr().unwrap());
 
   let err = futures::join!(
-    upnp_daemon(socket.local_addr()?.port()),
+    (async || {
+      let port = socket.local_addr().unwrap().port();
+      if config_get!(upnp, { true.to_string() }).parse().unwrap() {
+        upnp::upnp_daemon("rmw", port).await
+      }
+    })(),
     timer(&socket, &connecting),
     recv_from(&socket, &connecting),
     connecting.monitor(2, 1, Duration::from_secs(*DURATION), &|kvli| {

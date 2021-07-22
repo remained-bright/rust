@@ -1,3 +1,4 @@
+#![feature(async_closure)]
 #![feature(ptr_internals)]
 #![feature(array_zip)]
 
