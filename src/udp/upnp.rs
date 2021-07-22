@@ -1,9 +1,11 @@
+use async_std::task::sleep;
 use igd::aio::search_gateway;
 use log::info;
 use std::net::TcpStream;
 use std::net::{IpAddr, SocketAddrV4};
+use std::time::Duration;
 
-pub async fn upnp(name: &str, port: u16, duration: u32) {
+pub async fn upnp(name: &str, port: u16, duration: u32) -> bool {
   if let Ok(gateway) = search_gateway(Default::default()).await {
     println!("gateway {:?}", gateway.addr);
     if let Ok(stream) = TcpStream::connect(gateway.addr) {
@@ -23,14 +25,21 @@ pub async fn upnp(name: &str, port: u16, duration: u32) {
           {
             info!("upnp failed : {}", err);
           } else {
-            info!("upnp successful {}:{}", ip, port);
+            return true;
           }
         }
       }
     }
   }
+  false
 }
 
+const SLEEP_SECONDS: u32 = 60;
+
 pub async fn upnp_daemon(name: &str, port: u16) {
-  upnp(name, port, 300).await
+  let seconds = Duration::from_secs(SLEEP_SECONDS.into());
+  loop {
+    upnp(name, port, SLEEP_SECONDS + 60).await;
+    sleep(seconds).await;
+  }
 }
