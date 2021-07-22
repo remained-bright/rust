@@ -3,7 +3,7 @@ use log::info;
 use std::net::TcpStream;
 use std::net::{IpAddr, SocketAddrV4};
 
-pub async fn upnp(name: &str, port: u16) {
+pub async fn upnp(name: &str, port: u16, duration: u32) {
   if let Ok(gateway) = search_gateway(Default::default()).await {
     println!("gateway {:?}", gateway.addr);
     if let Ok(stream) = TcpStream::connect(gateway.addr) {
@@ -16,7 +16,7 @@ pub async fn upnp(name: &str, port: u16) {
               igd::PortMappingProtocol::UDP,
               port,
               SocketAddrV4::new(ip, port),
-              3600,
+              duration,
               name,
             )
             .await
@@ -29,4 +29,8 @@ pub async fn upnp(name: &str, port: u16) {
       }
     }
   }
+}
+
+pub async fn upnp_daemon(name: &str, port: u16) {
+  upnp(name, port, 300).await
 }
