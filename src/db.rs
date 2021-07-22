@@ -28,13 +28,14 @@ pub static TX: Persy = {
 };
 
 pub fn ipv4_insert(addr: [u8; 6]) -> Result<bool> {
-  let now = now::sec();
+  let mut now = now::sec();
   let mut tx = TX.begin()?;
 
   if let Some(v) = tx.one::<_, u64>(db::ipv4_time, &addr)? {
     if v <= now {
       return Ok(false);
     }
+    now = u64::min(v >> 1, now);
     tx.remove(db::time_ipv4, v, Some(addr))?;
   }
 
