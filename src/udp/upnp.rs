@@ -7,7 +7,6 @@ use std::time::Duration;
 
 pub async fn upnp(name: &str, port: u16, duration: u32) -> bool {
   if let Ok(gateway) = search_gateway(Default::default()).await {
-    println!("gateway {:?}", gateway.addr);
     if let Ok(stream) = TcpStream::connect(gateway.addr) {
       if let Ok(addr) = stream.local_addr() {
         let ip = addr.ip();
