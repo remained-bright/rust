@@ -1764,6 +1764,7 @@ dependencies = [
  "rayon",
  "retainer",
  "rust-ini",
+ "smallvec",
  "static_init",
  "stream-vbyte",
  "thiserror",

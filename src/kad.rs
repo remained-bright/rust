@@ -1,16 +1,21 @@
+use ed25519_dalek_blake3::PublicKey;
+use smallvec::SmallVec;
 use std::net::Ipv4Addr;
-
-struct Kad {
-  bucket: Vec<Node>,
-}
 
 pub struct Node {
   addr: Ipv4Addr,
-  key: [u8; 32],
+  key: PublicKey,
+}
+
+struct Kad {
+  bucket: Vec<SmallVec<[Node; 16]>>,
 }
 
 impl Kad {
   pub fn add(node: Node) -> bool {
+    false
+  }
+  pub fn neighbor(node: Node) -> bool {
     false
   }
 }
