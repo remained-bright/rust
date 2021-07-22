@@ -13,7 +13,7 @@ description="placeholder ; writing"
 
 [dependencies]
 tonic-web = { path = "lib/tonic/tonic-web" }
-igd = {version="0.12.0",features=["aio"], path="lib/rust-igd"}
+igd = {version="0.12.0",features=["aio"]}
 tonic = { path = "lib/tonic/tonic" }
 static_init = {path="lib/static_init"}
 retainer = {path="lib/retainer"}
