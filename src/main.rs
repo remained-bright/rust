@@ -1,6 +1,7 @@
 #![feature(async_closure)]
 #![feature(ptr_internals)]
 #![feature(array_zip)]
+#![feature(let_chains)]
 
 #[macro_use]
 mod r#macro;
