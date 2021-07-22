@@ -24,7 +24,8 @@ impl Kad {
     }
     false
   }
-  pub fn neighbor(node: Node) -> bool {
+  pub fn neighbor(&self, key: [u8; 32]) -> bool {
+    println!("same_prefix {}", same_prefix(key, self.id));
     false
   }
 }
