@@ -28,9 +28,10 @@ pub async fn listen(addr: String) -> Result<()> {
 
   let err = futures::join!(
     (async || {
-      let port = socket.local_addr().unwrap().port();
-      if config_get!(upnp, { true.to_string() }).parse().unwrap() {
-        upnp::upnp_daemon("rmw", port).await
+      if let Ok(true) = config_get!(upnp, { true.to_string() }).parse() {
+        if let Ok(addr) = socket.local_addr() {
+          upnp::upnp_daemon("rmw", addr.port()).await
+        }
       }
     })(),
     timer(&socket, &connecting),
