@@ -11,7 +11,6 @@ pub async fn upnp(name: &str, port: u16) {
         let ip = addr.ip();
         drop(stream);
         if let IpAddr::V4(ip) = ip {
-          info!("ip = {:?}", ip);
           if let Err(err) = gateway
             .add_port(
               igd::PortMappingProtocol::UDP,
@@ -23,6 +22,8 @@ pub async fn upnp(name: &str, port: u16) {
             .await
           {
             info!("upnp port mapping failed : {}", err);
+          } else {
+            info!("upnp port mapped ip {}:{}", ip, port);
           }
         }
       }
