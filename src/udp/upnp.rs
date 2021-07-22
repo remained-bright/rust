@@ -47,10 +47,7 @@ pub async fn upnp_daemon(name: &str, port: u16) {
       if ip != local_ip || gateway != pre_gateway {
         local_ip = ip;
         pre_gateway = gateway;
-        info!(
-          "upnp success ( local ip {}:{} ; gateway {})",
-          ip, port, gateway
-        );
+        info!("upnp success ( addr {}:{} ; gateway {})", ip, port, gateway);
       }
     };
     sleep(seconds).await;
