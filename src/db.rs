@@ -53,7 +53,6 @@ pub fn ipv4_offline(addr: [u8; 6]) -> Result<()> {
   let mut time: u64 = MAX_TIME;
   for t in tx.get::<_, u64>(db::ipv4_time, &addr)? {
     time = t;
-    println!("remove {}", t);
     tx.remove(db::time_ipv4, time, Some(addr.clone()))?;
   }
   if time >= MAX_TIME {
