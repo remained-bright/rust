@@ -1,5 +1,6 @@
 mod recv_from;
 mod timer;
+mod upnp;
 
 use crate::db::ipv4_offline;
 use crate::udp::recv_from::{recv_from, CONNECTED_TIME};
@@ -11,6 +12,7 @@ use async_std::net::UdpSocket;
 use log::error;
 use retainer::Cache;
 use static_init::dynamic;
+use std::net::{SocketAddrV4, ToSocketAddrs};
 use std::time::Duration;
 
 #[dynamic]
@@ -23,7 +25,11 @@ pub async fn listen(addr: String) -> Result<()> {
   let connecting = Cache::<[u8; 6], ()>::new();
 
   let socket = UdpSocket::bind(addr).await?;
+
+  println!("{:?}", socket.local_addr().unwrap());
+
   let err = futures::join!(
+    //    upnp::upnp(addr),
     timer(&socket, &connecting),
     recv_from(&socket, &connecting),
     connecting.monitor(2, 1, Duration::from_secs(*DURATION), &|kvli| {
