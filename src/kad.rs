@@ -1,3 +1,4 @@
+use crate::util::same_prefix::same_prefix;
 use ed25519_dalek_blake3::PublicKey;
 use smallvec::SmallVec;
 use std::net::Ipv4Addr;
@@ -10,19 +11,6 @@ pub struct Node {
 struct Kad {
   id: [u8; 32],
   bucket: SmallVec<[SmallVec<[Node; 16]>; 64]>,
-}
-
-pub fn distance(a: [u8; 32], b: [u8; 32]) -> u32 {
-  let mut count = 0;
-  for (i, j) in a.zip(b) {
-    if i == j {
-      count += 8;
-    } else {
-      count += (i ^ j).leading_zeros();
-      break;
-    }
-  }
-  count
 }
 
 // leading_zeros
