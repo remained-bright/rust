@@ -45,7 +45,7 @@ pub fn ipv4_insert(addr: [u8; 6]) -> Result<bool> {
   Ok(true)
 }
 
-const MAX_TIME: u64 = (!0) >> 2;
+const MAX_TIME: u64 = (!0) >> 1;
 
 pub fn ipv4_offline(addr: [u8; 6]) -> Result<()> {
   let mut tx = TX.begin()?;
@@ -58,7 +58,7 @@ pub fn ipv4_offline(addr: [u8; 6]) -> Result<()> {
   if time >= MAX_TIME {
     tx.remove::<_, u64>(db::ipv4_time, addr, None)?;
   } else {
-    time = time << 2;
+    time = time << 1;
     tx.put(db::ipv4_time, addr, time)?;
     tx.put(db::time_ipv4, time, addr)?;
   }
