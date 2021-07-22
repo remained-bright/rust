@@ -1,5 +1,7 @@
 mod recv_from;
 mod timer;
+
+use crate::db::ipv4_offline;
 use crate::udp::recv_from::{recv_from, CONNECTED_TIME};
 use crate::udp::timer::timer;
 use crate::util::now;
@@ -27,8 +29,10 @@ pub async fn listen(addr: String) -> Result<()> {
     connecting.monitor(2, 1, Duration::from_secs(*DURATION), &|kvli| {
       //msl秒内有过成功的连接
       if kvli.len() > 0 && (now::sec() - unsafe { CONNECTED_TIME }) <= *EXPIRE {
-        for (k, v) in kvli {
-          println!("TODO REMOVE {:?} {:?}", k, v)
+        for (k, _) in kvli {
+          ipv4_offline(*k)
+            .map_err(|err| error!("ipv4_offline {}", err))
+            .unwrap_or(());
         }
       }
     }),

@@ -31,8 +31,11 @@ pub fn ipv4_insert(addr: [u8; 6]) -> Result<bool> {
   let now = now::sec();
   let mut tx = TX.begin()?;
 
-  if None != tx.one::<_, u64>(db::ipv4_time, &addr)? {
-    return Ok(false);
+  if let Some(v) = tx.one::<_, u64>(db::ipv4_time, &addr)? {
+    if v <= now {
+      return Ok(false);
+    }
+    tx.remove(db::time_ipv4, v, Some(addr))?;
   }
 
   tx.put(db::ipv4_time, addr, now)?;
@@ -40,4 +43,27 @@ pub fn ipv4_insert(addr: [u8; 6]) -> Result<bool> {
 
   tx.commit()?;
   Ok(true)
+}
+
+const MAX_TIME: u64 = (!0) >> 2;
+
+pub fn ipv4_offline(addr: [u8; 6]) -> Result<()> {
+  let mut tx = TX.begin()?;
+
+  let mut time: u64 = MAX_TIME;
+  for t in tx.get::<_, u64>(db::ipv4_time, &addr)? {
+    time = t;
+    tx.remove(db::time_ipv4, time, Some(addr.clone()))?;
+  }
+  if time >= MAX_TIME {
+    tx.remove::<_, u64>(db::ipv4_time, addr, None)?;
+  } else {
+    time = time << 2;
+    println!("{:?} {}", addr, time);
+    tx.put(db::ipv4_time, addr, time)?;
+    tx.put(db::time_ipv4, time, addr)?;
+  }
+
+  tx.commit()?;
+  Ok(())
 }
