@@ -21,9 +21,9 @@ pub async fn upnp(name: &str, port: u16) {
             )
             .await
           {
-            info!("upnp port mapping failed : {}", err);
+            info!("upnp failed : {}", err);
           } else {
-            info!("upnp port mapped ip {}:{}", ip, port);
+            info!("upnp successful {}:{}", ip, port);
           }
         }
       }
