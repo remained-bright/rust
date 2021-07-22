@@ -9,14 +9,14 @@ pub struct Node {
 
 struct Kad {
   id: [u8; 32],
-  bucket: SmallVec<[SmallVec<[Node; 16]>; 32]>,
+  bucket: SmallVec<[SmallVec<[Node; 16]>; 64]>,
 }
 
 impl Kad {
   pub fn add(node: Node) -> bool {
     let mut distance = 0;
-    if distance > 32 {
-      distance = 32;
+    if distance > 64 {
+      distance = 64;
     }
     false
   }
