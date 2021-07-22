@@ -41,7 +41,7 @@ pub async fn upnp_daemon(name: &str, port: u16) {
   let seconds = Duration::from_secs(SLEEP_SECONDS.into());
 
   loop {
-    if let Some(ip) = upnp(name, port, SLEEP_SECONDS + 60).await {
+    if let Some(ip) = upnp(name, port, SLEEP_SECONDS + 86400).await {
       if ip != local_ip {
         local_ip = ip;
         info!("upnp success ( {}:{} )", local_ip, port);
