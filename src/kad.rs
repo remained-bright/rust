@@ -8,7 +8,7 @@ pub struct Node {
 }
 
 struct Kad {
-  bucket: Vec<SmallVec<[Node; 16]>>,
+  bucket: SmallVec<[SmallVec<[Node; 16]>; 128]>,
 }
 
 impl Kad {
