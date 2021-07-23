@@ -51,7 +51,8 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
 
   let secret = SecretKey::from_bytes(&seed()).unwrap();
   let public: PublicKey = (&secret).into();
-  let cmd_key_public_bytes = [&[CMD::KEY], &public.as_bytes()[..30]].concat();
+  let public_bytes = &public.as_bytes()[..30];
+  let cmd_key_public_bytes = [&[CMD::KEY], public_bytes].concat();
   println!("public {:?}", cmd_key_public_bytes);
 
   loop {
@@ -87,7 +88,7 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                   if key.len() == 30 {
                     reply!(
                       CMD::Q,
-                      hash128(&[&src.to_bytes(), key].concat()).to_le_bytes()
+                      hash128(&[&src.to_bytes(), key, public_bytes].concat()).to_le_bytes()
                     );
                   }
                 }
