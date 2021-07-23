@@ -100,8 +100,9 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                     println!("Hash {:?}", hash);
                   }
                 }
+                CMD::A => {}
                 _ => {
-                  println!("{}  > {}", src, input[0]);
+                  info!("{}  > {} : {:?}", src, input[0], &input[1..]);
                 }
               }
             }
