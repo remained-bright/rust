@@ -62,6 +62,9 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
           ($val:expr) => {
             send_to!($val, src);
           };
+          ($cmd:expr, $val:expr) => {
+            reply!([&[$cmd], &$val[..]].concat());
+          };
         }
 
         match src {
@@ -82,11 +85,10 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                 CMD::KEY => {
                   let key = &input[1..];
                   if key.len() == 30 {
-                    reply!([
-                      &[CMD::Q],
-                      &hash128(&[&src.to_bytes(), key].concat()).to_le_bytes()[..]
-                    ]
-                    .concat());
+                    reply!(
+                      CMD::Q,
+                      hash128(&[&src.to_bytes(), key].concat()).to_le_bytes()
+                    );
                   }
                 }
                 CMD::Q => {
@@ -97,7 +99,7 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                     unsafe { CONNECTED_TIME = now::sec() };
 
                     let hash = &input[1..];
-                    println!("Hash {:?}", hash);
+                    reply!(CMD::A, []);
                   }
                 }
                 CMD::A => {}
