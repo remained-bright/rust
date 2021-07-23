@@ -6,7 +6,7 @@ use std::io::prelude::*;
 use std::mem::MaybeUninit;
 use std::sync::mpsc;
 use std::thread;
-use std::time::Instant;
+//use std::time::Instant;
 
 struct Seed {
   pub arr: [u8; 32],
@@ -26,7 +26,7 @@ impl Seed {
   }
 }
 
-pub fn _seed(c: mpsc::Sender<Option<[u8; 30]>>) {
+pub fn _seed(c: mpsc::Sender<Option<[u8; 32]>>) {
   thread::spawn(move || {
     let mut seed = Seed::new();
     let mut secret;
@@ -53,16 +53,15 @@ pub fn _seed(c: mpsc::Sender<Option<[u8; 30]>>) {
 
       let bytes = public.as_bytes();
       if bytes[PUBLIC_KEY_LENGTH - 1] == 0 && bytes[PUBLIC_KEY_LENGTH - 2] == 0 {
-        c.send(Some(seed.arr[..30].try_into().unwrap()))
-          .unwrap_or(());
+        c.send(Some(seed.arr)).unwrap_or(());
         return;
       }
     }
   });
 }
 
-pub fn seed_new() -> [u8; 30] {
-  let now = Instant::now();
+pub fn seed_new() -> [u8; 32] {
+  //let now = Instant::now();
 
   println!("首次运行，生成秘钥中，请稍等 ···");
 
@@ -86,16 +85,13 @@ pub fn seed_new() -> [u8; 30] {
         }
       }
       Some(seed) => {
-        println!("");
-        println!("seed = {:?}", seed);
-        println!("cost time {}", now.elapsed().as_secs());
         return seed;
       }
     }
   }
 }
 
-pub fn seed() -> [u8; 30] {
+pub fn seed() -> [u8; 32] {
   let seed = config_get!(seed, {
     base64::encode_config(seed_new(), base64::URL_SAFE_NO_PAD)
   });
