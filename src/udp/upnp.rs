@@ -1,5 +1,6 @@
 use async_std::task::sleep;
 use igd::aio::search_gateway;
+use igd::AddPortError::PortInUse;
 use log::info;
 use std::net::TcpStream;
 use std::net::{IpAddr, Ipv4Addr, SocketAddrV4};
@@ -13,19 +14,42 @@ pub async fn upnp(name: &str, port: u16, duration: u32) -> Option<(SocketAddrV4,
         let ip = addr.ip();
         drop(stream);
         if let IpAddr::V4(ip) = ip {
-          if let Err(err) = gateway
-            .add_port(
-              igd::PortMappingProtocol::UDP,
-              port,
-              SocketAddrV4::new(ip, port),
-              duration,
-              name,
-            )
-            .await
-          {
-            info!("upnp failed {} > {}", gateway_addr, err);
-          } else {
-            return Some((gateway_addr, ip));
+          let mut retry = true;
+          loop {
+            match gateway
+              .add_port(
+                igd::PortMappingProtocol::UDP,
+                port,
+                SocketAddrV4::new(ip, port),
+                duration,
+                name,
+              )
+              .await
+            {
+              Err(err) => {
+                match err {
+                  PortInUse => {
+                    if retry {
+                      retry = false;
+                      match gateway
+                        .remove_port(igd::PortMappingProtocol::UDP, port)
+                        .await
+                      {
+                        Err(err) => info!("upnp remove port {} error {}", port, err),
+                        Ok(_) => {
+                          continue;
+                        }
+                      }
+                    }
+                  }
+                  _ => {}
+                }
+                info!("upnp failed {} > {}", gateway_addr, err)
+              }
+              Ok(_) => {
+                return Some((gateway_addr, ip));
+              }
+            }
           }
         }
       }
@@ -43,7 +67,7 @@ pub async fn upnp_daemon(name: &str, port: u16) {
   let seconds = Duration::from_secs(SLEEP_SECONDS.into());
 
   loop {
-    if let Some((gateway, ip)) = upnp(name, port, SLEEP_SECONDS + 6).await {
+    if let Some((gateway, ip)) = upnp(name, port, 86400).await {
       if ip != local_ip || gateway != pre_gateway {
         local_ip = ip;
         pre_gateway = gateway;
