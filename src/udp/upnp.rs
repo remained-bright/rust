@@ -43,7 +43,7 @@ pub async fn upnp_daemon(name: &str, port: u16) {
   let seconds = Duration::from_secs(SLEEP_SECONDS.into());
 
   loop {
-    if let Some((gateway, ip)) = upnp(name, port, 86400).await {
+    if let Some((gateway, ip)) = upnp(name, port, SLEEP_SECONDS + 6).await {
       if ip != local_ip || gateway != pre_gateway {
         local_ip = ip;
         pre_gateway = gateway;
