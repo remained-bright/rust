@@ -70,17 +70,13 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
               match input[0] {
                 CMD::PING => reply!([CMD::PONG]),
                 CMD::PONG => {
-                  let key = src.to_bytes();
-                  match connecting.expiration(&key).await {
-                    Some(instant) => {
-                      info!(
-                        "ip pong {} connecting elapsed {:?}",
-                        src,
-                        (instant - *MSL).elapsed()
-                      );
-                      reply!(cmd_key_public_bytes);
-                    }
-                    None => {}
+                  if let Some(instant) = connecting.expiration(&src.to_bytes()).await {
+                    info!(
+                      "ip pong {} connecting elapsed {:?}",
+                      src,
+                      (instant - *MSL).elapsed()
+                    );
+                    reply!(cmd_key_public_bytes);
                   }
                 }
                 CMD::KEY => {
@@ -95,16 +91,13 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                 }
                 CMD::Q => {
                   let key = src.to_bytes();
-                  match connecting.expiration(&key).await {
-                    Some(_) => {
-                      connecting.remove(&key).await;
-                      ipv4_insert(key)?;
-                      unsafe { CONNECTED_TIME = now::sec() };
+                  if let Some(_) = connecting.expiration(&key).await {
+                    connecting.remove(&key).await;
+                    ipv4_insert(key)?;
+                    unsafe { CONNECTED_TIME = now::sec() };
 
-                      let hash = &input[1..];
-                      println!("Hash {:?}", hash);
-                    }
-                    None => {}
+                    let hash = &input[1..];
+                    println!("Hash {:?}", hash);
                   }
                 }
                 _ => {
