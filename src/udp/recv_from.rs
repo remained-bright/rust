@@ -83,7 +83,7 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                   }
                 }
                 CMD::KEY => {
-                  let key = &input[1..];
+                  let key = &input[1..n];
                   println!("key.len {}", key.len());
                   if key.len() == 30 {
                     reply!(
@@ -109,7 +109,7 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                 }
                 CMD::A => {
                   let key = &input[1..33];
-                  let token = &input[33..];
+                  let token = &input[33..n];
                   info!("key: {:?} token: {:?}", key, token);
                   info!(
                     "leading zero: {}",
