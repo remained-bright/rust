@@ -123,6 +123,7 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                       let pk = PublicKey::from_bytes(&[key, &[0, 0]].concat()).unwrap();
                       if let Ok(_) = pk.verify_strict(hash, &sign) {
                         // 设置id
+                        // 生成秘钥
                         // 响应加密后的id
                         let id = 0u32.to_le_bytes();
                         reply!(cmd_public_key);
