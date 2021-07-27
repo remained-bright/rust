@@ -102,8 +102,7 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                   }
                 }
                 CMD::Q => {
-                  let src_bytes = src.to_bytes();
-                  if let Some(_) = connecting.expiration(&src_bytes).await {
+                  if let Some(_) = connecting.expiration(&src.to_bytes()).await {
                     reply!([
                       &[CMD::A],
                       &public_bytes[..],
