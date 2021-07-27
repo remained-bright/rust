@@ -101,7 +101,7 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                     reply!([
                       &[CMD::A],
                       &public_bytes[..],
-                      &leading_zero::find(16, &input[1..n], hash64)
+                      &leading_zero::find(21, &input[1..n], hash64)
                     ]
                     .concat());
                   }
