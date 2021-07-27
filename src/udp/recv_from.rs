@@ -40,6 +40,7 @@ pub static MTU: usize = {
 pub static mut CONNECTED_TIME: u64 = 0;
 pub const QA_LEADING_ZERO: u32 = 16;
 pub const PUBLIC_KEY_LENGTH: usize = 30;
+pub const PUBLIC_KEY_LENGTH_1: usize = PUBLIC_KEY_LENGTH + 1;
 
 pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> Result<()> {
   macro_rules! send_to {
@@ -86,19 +87,14 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                   }
                 }
                 CMD::SEND_KEY => {
-                  if n == PUBLIC_KEY_LENGTH + 1 {
-                    reply!(
-                      CMD::Q,
-                      hash128(
-                        &[
-                          &src.to_bytes(),
-                          &input[1..PUBLIC_KEY_LENGTH + 1],
-                          public_bytes
-                        ]
-                        .concat()
-                      )
-                      .to_le_bytes()
-                    );
+                  if n == PUBLIC_KEY_LENGTH_1 {
+                    let key = &input[1..PUBLIC_KEY_LENGTH_1];
+                    if key != public_bytes {
+                      reply!(
+                        CMD::Q,
+                        hash128(&[&src.to_bytes(), key, public_bytes].concat()).to_le_bytes()
+                      );
+                    }
                   }
                 }
                 CMD::Q => {
@@ -112,8 +108,8 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                   }
                 }
                 CMD::A => {
-                  let key = &input[1..PUBLIC_KEY_LENGTH + 1];
-                  let token = &input[PUBLIC_KEY_LENGTH + 1..n];
+                  let key = &input[1..PUBLIC_KEY_LENGTH_1];
+                  let token = &input[PUBLIC_KEY_LENGTH_1..n];
                   if hash64(
                     &[
                       &hash128(&[&src.to_bytes(), key, public_bytes].concat()).to_le_bytes()[..],
@@ -134,7 +130,7 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                     ipv4_insert(src_bytes)?;
                     unsafe { CONNECTED_TIME = now::sec() };
 
-                    info!("public key {:?}", &input[..PUBLIC_KEY_LENGTH + 1]);
+                    info!("public key {:?}", &input[..PUBLIC_KEY_LENGTH_1]);
                   }
                 }
                 _ => {
