@@ -7,7 +7,7 @@ use crate::var::msl::MSL;
 use anyhow::Result;
 use async_std::net::UdpSocket;
 use bytes::BytesMut;
-use ed25519_dalek_blake3::{PublicKey, SecretKey};
+use ed25519_dalek_blake3::{ExpandedSecretKey, PublicKey, SecretKey};
 use log::{error, info};
 use retainer::Cache;
 use static_init::dynamic;
@@ -53,6 +53,7 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
   input.resize(*MTU, 0);
 
   let secret = SecretKey::from_bytes(&seed()).unwrap();
+  let signer: ExpandedSecretKey = (&secret).into();
   let public: PublicKey = (&secret).into();
   let public_bytes = &public.as_bytes()[..PUBLIC_KEY_LENGTH];
   let cmd_send_key = [&[CMD::SEND_KEY], public_bytes].concat();
@@ -99,17 +100,18 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                 }
                 CMD::Q => {
                   if let Some(_) = connecting.expiration(&src.to_bytes()).await {
-                    reply!([
-                      &[CMD::A],
-                      &public_bytes[..],
-                      &leading_zero::find(QA_LEADING_ZERO, &input[1..n], hash64)
-                    ]
-                    .concat());
+                    let q = &input[1..n];
+                    let token = &leading_zero::find(QA_LEADING_ZERO, q, hash64);
+                    let sign = signer.sign(&[q, token].concat(), &public).to_bytes();
+                    info!("sign {:?} len {}", sign, sign.len());
+
+                    reply!([&[CMD::A], &public_bytes[..], token].concat());
                   }
                 }
                 CMD::A => {
                   let key = &input[1..PUBLIC_KEY_LENGTH_1];
                   let token = &input[PUBLIC_KEY_LENGTH_1..n];
+
                   if hash64(
                     &[
                       &hash128(&[&src.to_bytes(), key, public_bytes].concat()).to_le_bytes()[..],
@@ -129,7 +131,6 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                     connecting.remove(&src_bytes).await;
                     ipv4_insert(src_bytes)?;
                     unsafe { CONNECTED_TIME = now::sec() };
-
                     info!("public key {:?}", &input[..PUBLIC_KEY_LENGTH_1]);
                   }
                 }
