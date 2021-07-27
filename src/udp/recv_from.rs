@@ -53,7 +53,6 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
   let public: PublicKey = (&secret).into();
   let public_bytes = &public.as_bytes()[..30];
   let cmd_key_public_bytes = [&[CMD::KEY], public_bytes].concat();
-  println!("public {:?}", cmd_key_public_bytes);
 
   loop {
     match socket.recv_from(&mut input).await {
@@ -107,7 +106,11 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                     .concat());
                   }
                 }
-                CMD::A => {}
+                CMD::A => {
+                  let key = &input[1..33];
+                  let token = &input[33..];
+                  info!("key: {:?} token: {:?}", key, token);
+                }
                 _ => {
                   info!("{}  > {} : {:?}", src, input[0], &input[1..]);
                 }
