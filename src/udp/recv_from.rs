@@ -7,7 +7,7 @@ use crate::var::msl::MSL;
 use anyhow::Result;
 use async_std::net::UdpSocket;
 use bytes::BytesMut;
-use ed25519_dalek_blake3::{ExpandedSecretKey, PublicKey, SecretKey};
+use ed25519_dalek_blake3::{ExpandedSecretKey, PublicKey, SecretKey, Signature};
 use log::{error, info};
 use retainer::Cache;
 use static_init::dynamic;
@@ -102,27 +102,30 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                   if let Some(_) = connecting.expiration(&src.to_bytes()).await {
                     let q = &input[1..n];
                     let token = &leading_zero::find(QA_LEADING_ZERO, q, hash64);
-                    let sign = signer.sign(&[q, token].concat(), &public).to_bytes();
-                    info!("sign {:?} len {}", sign, sign.len());
+                    let sign = signer.sign(q, &public).to_bytes();
 
-                    reply!([&[CMD::A], &public_bytes[..], token].concat());
+                    reply!([&[CMD::A], &sign[..], &public_bytes[..], token].concat());
                   }
                 }
                 CMD::A => {
-                  let key = &input[1..PUBLIC_KEY_LENGTH_1];
-                  let token = &input[PUBLIC_KEY_LENGTH_1..n];
+                  if n >= PUBLIC_KEY_LENGTH_1 + 64 {
+                    let key = &input[1..PUBLIC_KEY_LENGTH_1];
+                    let sign = Signature::new(
+                      input[PUBLIC_KEY_LENGTH_1..PUBLIC_KEY_LENGTH_1 + 64]
+                        .try_into()
+                        .unwrap(),
+                    );
+                    let token = &input[PUBLIC_KEY_LENGTH_1 + 64..n];
+                    let hash =
+                      &hash128(&[&src.to_bytes(), key, public_bytes].concat()).to_le_bytes()[..];
 
-                  if hash64(
-                    &[
-                      &hash128(&[&src.to_bytes(), key, public_bytes].concat()).to_le_bytes()[..],
-                      &token,
-                    ]
-                    .concat(),
-                  )
-                  .leading_zeros()
-                    >= QA_LEADING_ZERO
-                  {
-                    reply!(cmd_public_key);
+                    if hash64(&[hash, &token].concat()).leading_zeros() >= QA_LEADING_ZERO {
+                      println!(
+                        "public verify_strict {:?}",
+                        public.verify_strict(hash, &sign),
+                      );
+                      reply!(cmd_public_key);
+                    }
                   };
                 }
                 CMD::PUBLIC_KEY => {
