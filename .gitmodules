@@ -4,9 +4,6 @@
 [submodule "lib/retainer"]
 	path = lib/retainer
 	url = git@github.com:gcxfd/retainer.git
-[submodule "lib/persy"]
-	path = lib/persy
-	url = git@gitlab.com:gcxfd/persy.git
 [submodule "lib/tonic"]
 	path = lib/tonic
 	url = git@github.com:hyperium/tonic.git
