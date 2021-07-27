@@ -120,10 +120,8 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                       &hash128(&[&src.to_bytes(), key, public_bytes].concat()).to_le_bytes()[..];
 
                     if hash64(&[hash, &token].concat()).leading_zeros() >= QA_LEADING_ZERO {
-                      println!(
-                        "public verify_strict {:?}",
-                        public.verify_strict(hash, &sign),
-                      );
+                      let pk = PublicKey::from_bytes(&[key, &[0, 0]].concat()).unwrap();
+                      println!("public verify_strict {:?}", pk.verify_strict(hash, &sign),);
                       reply!(cmd_public_key);
                     }
                   };
