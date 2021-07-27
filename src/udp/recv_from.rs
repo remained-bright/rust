@@ -40,7 +40,12 @@ pub static MTU: usize = {
 
 pub static mut CONNECTED_TIME: u64 = 0;
 pub const QA_LEADING_ZERO: u32 = 16;
+
 pub const PUBLIC_KEY_LENGTH: usize = 30;
+fn public_key_from_bytes(bytes: &[u8]) -> PublicKey {
+  PublicKey::from_bytes(&[bytes, &[0, 0]].concat()).unwrap()
+}
+
 pub const PUBLIC_KEY_LENGTH_1: usize = PUBLIC_KEY_LENGTH + 1;
 
 pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> Result<()> {
@@ -122,7 +127,7 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                       &hash128(&[&src.to_bytes(), key, public_bytes].concat()).to_le_bytes()[..];
 
                     if hash64(&[hash, &token].concat()).leading_zeros() >= QA_LEADING_ZERO {
-                      let pk = PublicKey::from_bytes(&[key, &[0, 0]].concat()).unwrap();
+                      let pk = public_key_from_bytes(key);
                       if let Ok(_) = pk.verify_strict(hash, &sign) {
                         let xpk: X25519PublicKey = pk.into();
                         let xsecret = x25519_secret.diffie_hellman(&xpk);
@@ -142,7 +147,12 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                     connecting.remove(&src_bytes).await;
                     ipv4_insert(src_bytes)?;
                     unsafe { CONNECTED_TIME = now::sec() };
-                    info!("public key {:?}", &input[..PUBLIC_KEY_LENGTH_1]);
+                    let pk = public_key_from_bytes(&input[1..PUBLIC_KEY_LENGTH_1]);
+                    let xpk: X25519PublicKey = pk.into();
+                    let xsecret = x25519_secret.diffie_hellman(&xpk);
+                    let xsecret = xsecret.as_bytes();
+
+                    info!("xsecret = {:?}", xsecret);
                   }
                 }
                 _ => {
