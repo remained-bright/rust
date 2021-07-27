@@ -12,6 +12,8 @@ pub static DB_FILE: PathBuf = Path::new(&*DIR).join("rmw.persy");
 pub mod db {
   pub const ipv4_time: &str = "ipv4Time";
   pub const time_ipv4: &str = "timeIpv4";
+  pub const id_public: &str = "idPublic";
+  pub const public_id: &str = "publicId";
 }
 
 #[dynamic]
