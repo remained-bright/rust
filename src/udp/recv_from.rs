@@ -83,12 +83,11 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                   }
                 }
                 CMD::KEY => {
-                  let key = &input[1..n];
-                  println!("key.len {} n = {}", key.len(), n);
-                  if key.len() == 30 {
+                  if n == 31 {
                     reply!(
                       CMD::Q,
-                      hash128(&[&src.to_bytes(), key, public_bytes].concat()).to_le_bytes()
+                      hash128(&[&src.to_bytes(), &input[1..31], public_bytes].concat())
+                        .to_le_bytes()
                     );
                   }
                 }
@@ -102,14 +101,14 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                     reply!([
                       &[CMD::A],
                       &public_bytes[..],
-                      &leading_zero::find(16, &input[1..], hash64)
+                      &leading_zero::find(16, &input[1..n], hash64)
                     ]
                     .concat());
                   }
                 }
                 CMD::A => {
-                  let key = &input[1..33];
-                  let token = &input[33..n];
+                  let key = &input[1..31];
+                  let token = &input[31..n];
                   info!("key: {:?} token: {:?}", key, token);
                   info!(
                     "leading zero: {}",
