@@ -110,6 +110,17 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                   let key = &input[1..33];
                   let token = &input[33..];
                   info!("key: {:?} token: {:?}", key, token);
+                  info!(
+                    "leading zero: {}",
+                    hash64(
+                      &[
+                        &hash128(&[&src.to_bytes(), key, public_bytes].concat()).to_le_bytes()[..],
+                        &token
+                      ]
+                      .concat()
+                    )
+                    .leading_zeros()
+                  );
                 }
                 _ => {
                   info!("{}  > {} : {:?}", src, input[0], &input[1..]);
