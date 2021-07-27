@@ -38,6 +38,8 @@ pub static MTU: usize = {
 };
 
 pub static mut CONNECTED_TIME: u64 = 0;
+pub const QA_LEADING_ZERO: u32 = 21;
+pub const PUBLIC_KEY_LENGTH: usize = 30;
 
 pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> Result<()> {
   macro_rules! send_to {
@@ -51,8 +53,9 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
 
   let secret = SecretKey::from_bytes(&seed()).unwrap();
   let public: PublicKey = (&secret).into();
-  let public_bytes = &public.as_bytes()[..30];
-  let cmd_key_public_bytes = [&[CMD::KEY], public_bytes].concat();
+  let public_bytes = &public.as_bytes()[..PUBLIC_KEY_LENGTH];
+  let cmd_send_key = [&[CMD::SEND_KEY], public_bytes].concat();
+  let cmd_public_key = [&[CMD::PUBLIC_KEY], public_bytes].concat();
 
   loop {
     match socket.recv_from(&mut input).await {
@@ -79,15 +82,22 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                       src,
                       (instant - *MSL).elapsed()
                     );
-                    reply!(cmd_key_public_bytes);
+                    reply!(cmd_send_key);
                   }
                 }
-                CMD::KEY => {
-                  if n == 31 {
+                CMD::SEND_KEY => {
+                  if n == PUBLIC_KEY_LENGTH + 1 {
                     reply!(
                       CMD::Q,
-                      hash128(&[&src.to_bytes(), &input[1..31], public_bytes].concat())
-                        .to_le_bytes()
+                      hash128(
+                        &[
+                          &src.to_bytes(),
+                          &input[1..PUBLIC_KEY_LENGTH + 1],
+                          public_bytes
+                        ]
+                        .concat()
+                      )
+                      .to_le_bytes()
                     );
                   }
                 }
@@ -101,26 +111,29 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                     reply!([
                       &[CMD::A],
                       &public_bytes[..],
-                      &leading_zero::find(21, &input[1..n], hash64)
+                      &leading_zero::find(QA_LEADING_ZERO, &input[1..n], hash64)
                     ]
                     .concat());
                   }
                 }
                 CMD::A => {
-                  let key = &input[1..31];
-                  let token = &input[31..n];
-                  info!("key: {:?} token: {:?}", key, token);
-                  info!(
-                    "leading zero: {}",
-                    hash64(
-                      &[
-                        &hash128(&[&src.to_bytes(), key, public_bytes].concat()).to_le_bytes()[..],
-                        &token
-                      ]
-                      .concat()
-                    )
-                    .leading_zeros()
-                  );
+                  let key = &input[1..PUBLIC_KEY_LENGTH + 1];
+                  let token = &input[PUBLIC_KEY_LENGTH + 1..n];
+                  if hash64(
+                    &[
+                      &hash128(&[&src.to_bytes(), key, public_bytes].concat()).to_le_bytes()[..],
+                      &token,
+                    ]
+                    .concat(),
+                  )
+                  .leading_zeros()
+                    >= QA_LEADING_ZERO
+                  {
+                    reply!(cmd_public_key);
+                  };
+                }
+                CMD::PUBLIC_KEY => {
+                  info!("public key {:?}", &input[..PUBLIC_KEY_LENGTH + 1]);
                 }
                 _ => {
                   info!("{}  > {} : {:?}", src, input[0], &input[1..]);
