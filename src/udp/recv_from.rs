@@ -38,7 +38,7 @@ pub static MTU: usize = {
 };
 
 pub static mut CONNECTED_TIME: u64 = 0;
-pub const QA_LEADING_ZERO: u32 = 21;
+pub const QA_LEADING_ZERO: u32 = 16;
 pub const PUBLIC_KEY_LENGTH: usize = 30;
 
 pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> Result<()> {
