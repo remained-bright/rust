@@ -7,7 +7,7 @@ pub fn find<Hash: Fn(&[u8]) -> u64>(n: u32, v: &[u8], hash: Hash) -> Vec<u8> {
 
     let h = hash(&txt);
     if h.leading_zeros() >= n {
-      return txt;
+      return token;
     }
     vec_incr(&mut token);
   }

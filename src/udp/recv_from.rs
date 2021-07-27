@@ -1,7 +1,7 @@
 use crate::db::ipv4_insert;
 use crate::ed25519::seed;
 use crate::util::addr_to_bytes::ToBytes;
-use crate::util::now;
+use crate::util::{leading_zero, now};
 use crate::var::cmd::CMD;
 use crate::var::msl::MSL;
 use anyhow::Result;
@@ -12,7 +12,7 @@ use log::{error, info};
 use retainer::Cache;
 use static_init::dynamic;
 use std::net::SocketAddr::V4;
-use twox_hash::xxh3::hash128;
+use twox_hash::xxh3::{hash128, hash64};
 
 //use crate::encode;
 //use crate::file::test;
@@ -99,8 +99,12 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                     ipv4_insert(key)?;
                     unsafe { CONNECTED_TIME = now::sec() };
 
-                    let hash = &input[1..];
-                    reply!([&[CMD::A], &public_bytes[..]].concat());
+                    reply!([
+                      &[CMD::A],
+                      &public_bytes[..],
+                      &leading_zero::find(16, &input[1..], hash64)
+                    ]
+                    .concat());
                   }
                 }
                 CMD::A => {}
