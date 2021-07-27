@@ -104,7 +104,7 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                     let token = &leading_zero::find(QA_LEADING_ZERO, q, hash64);
                     let sign = signer.sign(q, &public).to_bytes();
 
-                    reply!([&[CMD::A], &sign[..], &public_bytes[..], token].concat());
+                    reply!([&[CMD::A], &public_bytes[..], &sign[..], token].concat());
                   }
                 }
                 CMD::A => {
