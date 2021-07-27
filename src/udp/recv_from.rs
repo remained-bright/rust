@@ -100,7 +100,7 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                     unsafe { CONNECTED_TIME = now::sec() };
 
                     let hash = &input[1..];
-                    reply!(CMD::A, []);
+                    reply!([&[CMD::A], &public_bytes[..]].concat());
                   }
                 }
                 CMD::A => {}
