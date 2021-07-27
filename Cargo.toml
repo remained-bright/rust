@@ -14,6 +14,7 @@ description="placeholder ; writing"
 [dependencies]
 tonic-web = { path = "lib/tonic/tonic-web" }
 igd = { version = "0.12.0", features = ["aio"] }
+persy = {path="lib/persy"}
 tonic = { path = "lib/tonic/tonic" }
 static_init = {path="lib/static_init"}
 retainer = {path="lib/retainer"}
@@ -46,7 +47,6 @@ num_cpus = "1.13.0"
 base64 = "0.13.0"
 bus = "2.2.3"
 smallvec = "1.6.1"
-persy = "0.11.14"
 
 #sdb = "0.0.7"
 #wickdb = {git="https://github.com/Fullstop000/wickdb.git", branch="master"}
