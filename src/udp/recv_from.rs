@@ -84,7 +84,7 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                 }
                 CMD::KEY => {
                   let key = &input[1..n];
-                  println!("key.len {}", key.len());
+                  println!("key.len {} n = {}", key.len(), n);
                   if key.len() == 30 {
                     reply!(
                       CMD::Q,
