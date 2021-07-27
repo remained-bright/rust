@@ -102,12 +102,8 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                   }
                 }
                 CMD::Q => {
-                  let key = src.to_bytes();
-                  if let Some(_) = connecting.expiration(&key).await {
-                    connecting.remove(&key).await;
-                    ipv4_insert(key)?;
-                    unsafe { CONNECTED_TIME = now::sec() };
-
+                  let src_bytes = src.to_bytes();
+                  if let Some(_) = connecting.expiration(&src_bytes).await {
                     reply!([
                       &[CMD::A],
                       &public_bytes[..],
@@ -133,7 +129,14 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                   };
                 }
                 CMD::PUBLIC_KEY => {
-                  info!("public key {:?}", &input[..PUBLIC_KEY_LENGTH + 1]);
+                  let src_bytes = src.to_bytes();
+                  if let Some(_) = connecting.expiration(&src_bytes).await {
+                    connecting.remove(&src_bytes).await;
+                    ipv4_insert(src_bytes)?;
+                    unsafe { CONNECTED_TIME = now::sec() };
+
+                    info!("public key {:?}", &input[..PUBLIC_KEY_LENGTH + 1]);
+                  }
                 }
                 _ => {
                   info!("{}  > {} : {:?}", src, input[0], &input[1..]);
