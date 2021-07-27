@@ -13,6 +13,7 @@ use retainer::Cache;
 use static_init::dynamic;
 use std::net::SocketAddr::V4;
 use twox_hash::xxh3::{hash128, hash64};
+use x25519_dalek::{PublicKey as X25519PublicKey, StaticSecret};
 
 //use crate::encode;
 //use crate::file::test;
@@ -55,6 +56,7 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
   let secret = SecretKey::from_bytes(&seed()).unwrap();
   let signer: ExpandedSecretKey = (&secret).into();
   let public: PublicKey = (&secret).into();
+  let x25519_secret: StaticSecret = secret.into();
   let public_bytes = &public.as_bytes()[..PUBLIC_KEY_LENGTH];
   let cmd_send_key = [&[CMD::SEND_KEY], public_bytes].concat();
   let cmd_public_key = [&[CMD::PUBLIC_KEY], public_bytes].concat();
@@ -122,9 +124,12 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                     if hash64(&[hash, &token].concat()).leading_zeros() >= QA_LEADING_ZERO {
                       let pk = PublicKey::from_bytes(&[key, &[0, 0]].concat()).unwrap();
                       if let Ok(_) = pk.verify_strict(hash, &sign) {
+                        let xpk: X25519PublicKey = pk.into();
+                        let xsecret = x25519_secret.diffie_hellman(&xpk);
+                        let xsecret = xsecret.as_bytes();
                         // 设置id
-                        // 生成秘钥
                         // 响应加密后的id
+                        println!("xsecret {:?}", xsecret);
                         let id = 0u32.to_le_bytes();
                         reply!(cmd_public_key);
                       }
