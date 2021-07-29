@@ -14,6 +14,7 @@ use static_init::dynamic;
 use std::net::SocketAddr::V4;
 use twox_hash::xxh3::{hash128, hash64};
 use x25519_dalek::{PublicKey as X25519PublicKey, StaticSecret};
+use xxblake3::{decrypt, encrypt};
 
 //use crate::encode;
 //use crate::file::test;
@@ -135,9 +136,11 @@ pub async fn recv_from(
                         // 设置id
                         // 响应加密后的id
                         println!("xsecret {:?}", xsecret);
-                        connected.insert(connect_id, xsecret, *HEARTBEAT);
-                        let id = connect_id.to_le_bytes();
-                        reply!(cmd_public_key);
+                        connected
+                          .insert(connect_id.wrapping_add(1), *xsecret, *HEARTBEAT)
+                          .await;
+                        let id = encrypt(xsecret, &connect_id.to_le_bytes());
+                        reply!([&cmd_public_key, &id[..]].concat());
                       }
                     }
                   };
@@ -155,7 +158,9 @@ pub async fn recv_from(
                     let xsecret = x25519_secret.diffie_hellman(&xpk);
                     let xsecret = xsecret.as_bytes();
 
-                    info!("xsecret = {:?}", xsecret);
+                    let id = decrypt(xsecret, &input[PUBLIC_KEY_LENGTH_1..n]);
+
+                    info!("id = {:?}\nxsecret = {:?}", id, xsecret);
                   }
                 }
                 _ => {

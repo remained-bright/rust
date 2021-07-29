@@ -12,7 +12,8 @@ pub static MSL: Duration = {
 };
 
 #[dynamic]
-static HEARTBEAT: Duration = {
+// UDP 心跳超时
+pub static HEARTBEAT: Duration = {
   let mut heartbeat = config_get!(heartbeat, { 19.to_string() }).parse().unwrap();
   if heartbeat < 1 {
     heartbeat = 1

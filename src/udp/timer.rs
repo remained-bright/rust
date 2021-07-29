@@ -2,7 +2,7 @@ use crate::db::{db, TX};
 use crate::util::addr_to_bytes::ToBytes;
 use crate::util::bytes_to_addr;
 use crate::var::cmd::CMD;
-use crate::var::msl::MSL;
+use crate::var::duration::MSL;
 use async_std::net::UdpSocket;
 use log::{error, info};
 use retainer::Cache;
