@@ -48,6 +48,7 @@ fn public_key_from_bytes(bytes: &[u8]) -> PublicKey {
 }
 
 pub const PUBLIC_KEY_LENGTH_1: usize = PUBLIC_KEY_LENGTH + 1;
+pub const PUBLIC_KEY_LENGTH_13: usize = PUBLIC_KEY_LENGTH + 13;
 
 pub async fn recv_from(
   socket: &UdpSocket,
@@ -68,8 +69,7 @@ pub async fn recv_from(
   let public: PublicKey = (&secret).into();
   let x25519_secret: StaticSecret = secret.into();
   let public_bytes = &public.as_bytes()[..PUBLIC_KEY_LENGTH];
-  let cmd_send_key = [&[CMD::SEND_KEY], public_bytes].concat();
-  let cmd_public_key = [&[CMD::PUBLIC_KEY], public_bytes].concat();
+  let cmd_key = [&[CMD::KEY], public_bytes].concat();
   let mut connect_id: u32 = 0;
 
   loop {
@@ -92,11 +92,11 @@ pub async fn recv_from(
                 CMD::PING => reply!([CMD::PONG]),
                 CMD::PONG => {
                   if connecting.renew(&src.to_bytes(), *MSL).await {
-                    reply!(cmd_send_key);
+                    reply!(cmd_key);
                   }
                 }
-                CMD::SEND_KEY => {
-                  if n == PUBLIC_KEY_LENGTH_1 {
+                CMD::KEY => match n {
+                  PUBLIC_KEY_LENGTH_1 => {
                     let key = &input[1..PUBLIC_KEY_LENGTH_1];
                     if key != public_bytes {
                       reply!(
@@ -105,7 +105,31 @@ pub async fn recv_from(
                       );
                     }
                   }
-                }
+                  PUBLIC_KEY_LENGTH_13 => {
+                    let src_bytes = src.to_bytes();
+                    if let Some(instant) = connecting.expiration(&src_bytes).await {
+                      info!("connect cost {:?}", (instant - 3 * *MSL).elapsed());
+
+                      connecting.remove(&src_bytes).await;
+                      ipv4_insert(src_bytes)?;
+                      unsafe { CONNECTED_TIME = now::sec() };
+                      let pk = public_key_from_bytes(&input[1..PUBLIC_KEY_LENGTH_1]);
+                      let xpk: X25519PublicKey = pk.into();
+                      let xsecret = x25519_secret.diffie_hellman(&xpk);
+                      let xsecret = xsecret.as_bytes();
+
+                      let id = decrypt(
+                        xsecret,
+                        &input[PUBLIC_KEY_LENGTH_1..PUBLIC_KEY_LENGTH_1 + 12],
+                      );
+
+                      info!("id = {:?}\nxsecret = {:?}", id, xsecret);
+                    }
+                  }
+                  _ => {
+                    error!("CMD::KEY n={}", n)
+                  }
+                },
                 CMD::Q => {
                   if connecting.renew(&src.to_bytes(), *MSL).await {
                     let q = &input[1..n];
@@ -139,33 +163,10 @@ pub async fn recv_from(
                         connect_id = connect_id.wrapping_add(1);
                         connected.insert(connect_id, *xsecret, *HEARTBEAT).await;
                         let id = encrypt(xsecret, &connect_id.to_le_bytes());
-                        reply!([&cmd_public_key, &id[..]].concat());
+                        reply!([&cmd_key, &id[..]].concat());
                       }
                     }
                   };
-                }
-                CMD::PUBLIC_KEY => {
-                  if n == PUBLIC_KEY_LENGTH_1 + 12 {
-                    let src_bytes = src.to_bytes();
-                    if let Some(instant) = connecting.expiration(&src_bytes).await {
-                      info!("connect cost {:?}", (instant - 3 * *MSL).elapsed());
-
-                      connecting.remove(&src_bytes).await;
-                      ipv4_insert(src_bytes)?;
-                      unsafe { CONNECTED_TIME = now::sec() };
-                      let pk = public_key_from_bytes(&input[1..PUBLIC_KEY_LENGTH_1]);
-                      let xpk: X25519PublicKey = pk.into();
-                      let xsecret = x25519_secret.diffie_hellman(&xpk);
-                      let xsecret = xsecret.as_bytes();
-
-                      let id = decrypt(
-                        xsecret,
-                        &input[PUBLIC_KEY_LENGTH_1..PUBLIC_KEY_LENGTH_1 + 12],
-                      );
-
-                      info!("id = {:?}\nxsecret = {:?}", id, xsecret);
-                    }
-                  }
                 }
                 _ => {
                   info!("{}  > {} : {:?}", src, input[0], &input[1..]);
