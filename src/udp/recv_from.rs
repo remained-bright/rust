@@ -146,7 +146,7 @@ pub async fn recv_from(
                   };
                 }
                 CMD::PUBLIC_KEY => {
-                  if n > PUBLIC_KEY_LENGTH_1 {
+                  if n == PUBLIC_KEY_LENGTH_1 + 12 {
                     let src_bytes = src.to_bytes();
                     if let Some(instant) = connecting.expiration(&src_bytes).await {
                       info!("connect cost {:?}", (instant - 3 * *MSL).elapsed());
@@ -159,7 +159,10 @@ pub async fn recv_from(
                       let xsecret = x25519_secret.diffie_hellman(&xpk);
                       let xsecret = xsecret.as_bytes();
 
-                      let id = decrypt(xsecret, &input[PUBLIC_KEY_LENGTH_1..n]);
+                      let id = decrypt(
+                        xsecret,
+                        &input[PUBLIC_KEY_LENGTH_1..PUBLIC_KEY_LENGTH_1 + 12],
+                      );
 
                       info!(
                         "n-PUBLIC_KEY_LENGTH_1={},\nid = {:?}\nxsecret = {:?}",
