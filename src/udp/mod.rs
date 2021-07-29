@@ -10,6 +10,7 @@ use crate::var::duration::{HEARTBEAT, MSL};
 use anyhow::Result;
 use async_std::net::UdpSocket;
 use log::error;
+use log::info;
 use retainer::Cache;
 use static_init::dynamic;
 use std::time::Duration;
@@ -34,7 +35,13 @@ pub async fn listen(addr: String) -> Result<()> {
     })(),
     timer(&socket, &connecting),
     recv_from(&socket, &connecting, &connected),
-    connected.monitor(2, 1, *HEARTBEAT, &|_| {}),
+    connected.monitor(2, 1, *HEARTBEAT, &|kvli| {
+      if kvli.len() > 0 {
+        for (k, v) in kvli {
+          info!("{} {:?} HEARTBEAT EXPIRE", k, v)
+        }
+      }
+    }),
     connecting.monitor(2, 1, *MSL / 3 + Duration::from_secs(1), &|kvli| {
       //msl秒内有过成功的连接
       if kvli.len() > 0 && (now::sec() - unsafe { CONNECTED_TIME }) <= *EXPIRE {
