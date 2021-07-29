@@ -146,21 +146,28 @@ pub async fn recv_from(
                   };
                 }
                 CMD::PUBLIC_KEY => {
-                  let src_bytes = src.to_bytes();
-                  if let Some(instant) = connecting.expiration(&src_bytes).await {
-                    info!("connect cost {:?}", (instant - 3 * *MSL).elapsed());
+                  if n > PUBLIC_KEY_LENGTH_1 {
+                    let src_bytes = src.to_bytes();
+                    if let Some(instant) = connecting.expiration(&src_bytes).await {
+                      info!("connect cost {:?}", (instant - 3 * *MSL).elapsed());
 
-                    connecting.remove(&src_bytes).await;
-                    ipv4_insert(src_bytes)?;
-                    unsafe { CONNECTED_TIME = now::sec() };
-                    let pk = public_key_from_bytes(&input[1..PUBLIC_KEY_LENGTH_1]);
-                    let xpk: X25519PublicKey = pk.into();
-                    let xsecret = x25519_secret.diffie_hellman(&xpk);
-                    let xsecret = xsecret.as_bytes();
+                      connecting.remove(&src_bytes).await;
+                      ipv4_insert(src_bytes)?;
+                      unsafe { CONNECTED_TIME = now::sec() };
+                      let pk = public_key_from_bytes(&input[1..PUBLIC_KEY_LENGTH_1]);
+                      let xpk: X25519PublicKey = pk.into();
+                      let xsecret = x25519_secret.diffie_hellman(&xpk);
+                      let xsecret = xsecret.as_bytes();
 
-                    let id = decrypt(xsecret, &input[PUBLIC_KEY_LENGTH_1..n]);
+                      let id = decrypt(xsecret, &input[PUBLIC_KEY_LENGTH_1..n]);
 
-                    info!("id = {:?}\nxsecret = {:?}", id, xsecret);
+                      info!(
+                        "n-PUBLIC_KEY_LENGTH_1={},\nid = {:?}\nxsecret = {:?}",
+                        n - PUBLIC_KEY_LENGTH_1,
+                        id,
+                        xsecret
+                      );
+                    }
                   }
                 }
                 _ => {
