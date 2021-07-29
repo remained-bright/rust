@@ -163,12 +163,7 @@ pub async fn recv_from(
                         &input[PUBLIC_KEY_LENGTH_1..PUBLIC_KEY_LENGTH_1 + 12],
                       );
 
-                      info!(
-                        "n-PUBLIC_KEY_LENGTH_1={},\nid = {:?}\nxsecret = {:?}",
-                        n - PUBLIC_KEY_LENGTH_1,
-                        id,
-                        xsecret
-                      );
+                      info!("id = {:?}\nxsecret = {:?}", id, xsecret);
                     }
                   }
                 }
