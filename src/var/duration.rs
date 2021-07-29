@@ -10,3 +10,12 @@ pub static MSL: Duration = {
   }
   Duration::from_secs(msl)
 };
+
+#[dynamic]
+static HEARTBEAT: Duration = {
+  let mut heartbeat = config_get!(heartbeat, { 19.to_string() }).parse().unwrap();
+  if heartbeat < 1 {
+    heartbeat = 1
+  }
+  Duration::from_secs(heartbeat)
+};

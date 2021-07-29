@@ -3,7 +3,7 @@ use crate::ed25519::seed;
 use crate::util::addr_to_bytes::ToBytes;
 use crate::util::{leading_zero, now};
 use crate::var::cmd::CMD;
-use crate::var::msl::MSL;
+use crate::var::duration::{HEARTBEAT, MSL};
 use anyhow::Result;
 use async_std::net::UdpSocket;
 use bytes::BytesMut;
@@ -69,6 +69,7 @@ pub async fn recv_from(
   let public_bytes = &public.as_bytes()[..PUBLIC_KEY_LENGTH];
   let cmd_send_key = [&[CMD::SEND_KEY], public_bytes].concat();
   let cmd_public_key = [&[CMD::PUBLIC_KEY], public_bytes].concat();
+  let mut connect_id: u32 = 0;
 
   loop {
     match socket.recv_from(&mut input).await {
@@ -134,7 +135,8 @@ pub async fn recv_from(
                         // 设置id
                         // 响应加密后的id
                         println!("xsecret {:?}", xsecret);
-                        let id = 0u32.to_le_bytes();
+                        connected.insert(connect_id, xsecret, *HEARTBEAT);
+                        let id = connect_id.to_le_bytes();
                         reply!(cmd_public_key);
                       }
                     }
