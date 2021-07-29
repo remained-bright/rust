@@ -85,12 +85,7 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
               match input[0] {
                 CMD::PING => reply!([CMD::PONG]),
                 CMD::PONG => {
-                  if let Some(instant) = connecting.expiration(&src.to_bytes()).await {
-                    info!(
-                      "ip pong {} connecting elapsed {:?}",
-                      src,
-                      (instant - *MSL).elapsed()
-                    );
+                  if connecting.renew(&src.to_bytes(), *MSL).await {
                     reply!(cmd_send_key);
                   }
                 }
@@ -106,7 +101,7 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                   }
                 }
                 CMD::Q => {
-                  if let Some(_) = connecting.expiration(&src.to_bytes()).await {
+                  if connecting.renew(&src.to_bytes(), *MSL).await {
                     let q = &input[1..n];
                     let token = &leading_zero::find(QA_LEADING_ZERO, q, hash64);
                     let sign = signer.sign(q, &public).to_bytes();
@@ -143,7 +138,9 @@ pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> R
                 }
                 CMD::PUBLIC_KEY => {
                   let src_bytes = src.to_bytes();
-                  if let Some(_) = connecting.expiration(&src_bytes).await {
+                  if let Some(instant) = connecting.expiration(&src_bytes).await {
+                    info!("connect cost {:?}", (instant - 3 * *MSL).elapsed());
+
                     connecting.remove(&src_bytes).await;
                     ipv4_insert(src_bytes)?;
                     unsafe { CONNECTED_TIME = now::sec() };
