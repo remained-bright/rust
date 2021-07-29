@@ -136,9 +136,8 @@ pub async fn recv_from(
                         // 设置id
                         // 响应加密后的id
                         println!("xsecret {:?}", xsecret);
-                        connected
-                          .insert(connect_id.wrapping_add(1), *xsecret, *HEARTBEAT)
-                          .await;
+                        connect_id = connect_id.wrapping_add(1);
+                        connected.insert(connect_id, *xsecret, *HEARTBEAT).await;
                         let id = encrypt(xsecret, &connect_id.to_le_bytes());
                         reply!([&cmd_public_key, &id[..]].concat());
                       }
