@@ -12,13 +12,9 @@ use async_std::net::UdpSocket;
 use log::error;
 use retainer::Cache;
 use static_init::dynamic;
-use std::time::Duration;
 
 #[dynamic]
-static DURATION: u64 = 3;
-
-#[dynamic]
-static EXPIRE: u64 = *DURATION + (*MSL).as_secs() + 1;
+static EXPIRE: u64 = (*MSL).as_secs() + 1;
 
 pub async fn listen(addr: String) -> Result<()> {
   let connecting = Cache::<[u8; 6], ()>::new();
@@ -36,7 +32,7 @@ pub async fn listen(addr: String) -> Result<()> {
     })(),
     timer(&socket, &connecting),
     recv_from(&socket, &connecting),
-    connecting.monitor(2, 1, Duration::from_secs(*DURATION), &|kvli| {
+    connecting.monitor(2, 1, *MSL, &|kvli| {
       //msl秒内有过成功的连接
       if kvli.len() > 0 && (now::sec() - unsafe { CONNECTED_TIME }) <= *EXPIRE {
         for (k, _) in kvli {
