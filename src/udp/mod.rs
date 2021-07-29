@@ -17,7 +17,11 @@ use std::time::Duration;
 #[dynamic]
 static EXPIRE: u64 = (*MSL).as_secs() + 1;
 
+#[dynamic]
+static HEARTBEAT: u64 = config_get!(heartbeat, { 19.to_string() }).parse().unwrap();
+
 pub async fn listen(addr: String) -> Result<()> {
+  let connected = Cache::<u32, [u8; 32]>::new();
   let connecting = Cache::<[u8; 6], ()>::new();
   let socket = UdpSocket::bind(addr).await?;
 
@@ -32,7 +36,8 @@ pub async fn listen(addr: String) -> Result<()> {
       }
     })(),
     timer(&socket, &connecting),
-    recv_from(&socket, &connecting),
+    recv_from(&socket, &connecting, &connected),
+    connected.monitor(2, 1, Duration::from_secs(*HEARTBEAT), &|_| {}),
     connecting.monitor(2, 1, *MSL / 3 + Duration::from_secs(1), &|kvli| {
       //msl秒内有过成功的连接
       if kvli.len() > 0 && (now::sec() - unsafe { CONNECTED_TIME }) <= *EXPIRE {

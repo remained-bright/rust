@@ -48,7 +48,11 @@ fn public_key_from_bytes(bytes: &[u8]) -> PublicKey {
 
 pub const PUBLIC_KEY_LENGTH_1: usize = PUBLIC_KEY_LENGTH + 1;
 
-pub async fn recv_from(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) -> Result<()> {
+pub async fn recv_from(
+  socket: &UdpSocket,
+  connecting: &Cache<[u8; 6], ()>,
+  connected: &Cache<u32, [u8; 32]>,
+) -> Result<()> {
   macro_rules! send_to {
     ($val:expr, $addr:expr) => {
       Await!(socket.send_to(&$val, $addr));
