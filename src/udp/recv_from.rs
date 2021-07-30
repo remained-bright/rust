@@ -116,30 +116,36 @@ pub async fn recv_from(
                       connecting.remove(&src_bytes).await;
                       ipv4_insert(src_bytes)?;
                       unsafe { CONNECTED_TIME = now::sec() };
-                      let pk = public_key_from_bytes(&input[1..PUBLIC_KEY_LENGTH_1]);
-                      let xpk: X25519PublicKey = pk.into();
-                      let xsecret = x25519_secret.diffie_hellman(&xpk);
-                      let xsecret = xsecret.as_bytes();
-                      if let Some(connect_id) = decrypt(
-                        xsecret,
-                        &input[PUBLIC_KEY_LENGTH_1..PUBLIC_KEY_LENGTH_1 + 12],
-                      ) {
-                        if let Ok(connect_id) = (*connect_id).try_into() {
-                          let connect_id = u32::from_le_bytes(connect_id);
+                    }
+                    let pk = public_key_from_bytes(&input[1..PUBLIC_KEY_LENGTH_1]);
+                    let xpk: X25519PublicKey = pk.into();
+                    let xsecret = x25519_secret.diffie_hellman(&xpk);
+                    let xsecret = xsecret.as_bytes();
+                    if let Some(connect_id) = decrypt(
+                      xsecret,
+                      &input[PUBLIC_KEY_LENGTH_1..PUBLIC_KEY_LENGTH_1 + 12],
+                    ) {
+                      if let Ok(connect_id) = (*connect_id).try_into() {
+                        let connect_id = u32::from_le_bytes(connect_id);
 
-                          let mut id = connect_id;
-                          loop {
-                            match connected.get(&id).await {
-                              None => break,
-                              Some(_) => id = id.wrapping_add(1),
-                            }
+                        let mut id = connect_id;
+                        loop {
+                          match connected.get(&id).await {
+                            None => break,
+                            Some(_) => id = id.wrapping_add(1),
                           }
-                          if connect_id == id {
-                            info!("id = {:?}\nxsecret = {:?}", id, xsecret);
-                          } else {
-                            //TODO
-                            info!("new id {} {}", CMD::ID, id);
-                          }
+                        }
+                        if connect_id == id {
+                          connected.insert(connect_id, *xsecret, *HEARTBEAT).await;
+                          info!("✅ id = {:?}\nxsecret = {:?}", id, xsecret);
+                        } else {
+                          // TODO 重新连接可以从这一步开始
+                          reply!([
+                            &[CMD::ID],
+                            public_bytes,
+                            &encrypt(xsecret, &id.to_le_bytes())[..]
+                          ]
+                          .concat());
                         }
                       }
                     }
@@ -197,6 +203,7 @@ pub async fn recv_from(
                     }
                   };
                 }
+                CMD::ID => {}
                 _ => {
                   info!("{}  > {} : {:?}", src, input[0], &input[1..]);
                 }
