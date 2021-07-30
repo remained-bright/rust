@@ -7,5 +7,4 @@ impl CMD {
   pub const KEY: u8 = 3;
   pub const Q: u8 = 4;
   pub const A: u8 = 5;
-  pub const ID: u8 = 6;
 }

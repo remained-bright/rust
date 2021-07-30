@@ -140,12 +140,7 @@ pub async fn recv_from(
                           info!("✅ id = {:?}\nxsecret = {:?}", id, xsecret);
                         } else {
                           // TODO 重新连接可以从这一步开始
-                          reply!([
-                            &[CMD::ID],
-                            public_bytes,
-                            &encrypt(xsecret, &id.to_le_bytes())[..]
-                          ]
-                          .concat());
+                          reply!([&cmd_key, &encrypt(xsecret, &id.to_le_bytes())[..]].concat());
                         }
                       }
                     }
@@ -203,7 +198,6 @@ pub async fn recv_from(
                     }
                   };
                 }
-                CMD::ID => {}
                 _ => {
                   info!("{}  > {} : {:?}", src, input[0], &input[1..]);
                 }
