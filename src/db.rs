@@ -33,12 +33,12 @@ pub static TX: Persy = {
 };
 
 pub fn seed() -> Result<[u8; 32]> {
-  let key: ByteVec = "seed".as_bytes().into();
+  let key: ByteVec = "seed".into();
   Ok(match TX.one::<ByteVec, ByteVec>(db::config, &key)? {
     Some(s) => s.0.try_into().unwrap(),
     None => {
       let s = seed_new();
-      TX.put(db::config, &key, &s.into())?;
+      TX.put(db::config, key, ByteVec(s.to_vec()))?;
       s
     }
   })
