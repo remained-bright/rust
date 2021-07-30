@@ -32,14 +32,16 @@ pub static TX: Persy = {
   .unwrap()
 };
 
-pub fn seed() -> [u8; 32] {
-  let seed = config_get!(seed, {
-    base64::encode_config(seed_new(), base64::URL_SAFE_NO_PAD)
-  });
-  base64::decode_config(seed, base64::URL_SAFE_NO_PAD)
-    .unwrap()
-    .try_into()
-    .unwrap()
+pub fn seed() -> Result<[u8; 32]> {
+  let key: ByteVec = "seed".as_bytes().into();
+  Ok(match TX.one::<ByteVec, ByteVec>(db::config, &key)? {
+    Some(s) => s.0.try_into().unwrap(),
+    None => {
+      let s = seed_new();
+      TX.put(db::config, &key, &s.into())?;
+      s
+    }
+  })
 }
 
 pub fn ipv4_insert(addr: [u8; 6]) -> Result<bool> {
