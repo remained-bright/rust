@@ -135,8 +135,10 @@ pub async fn recv_from(
                             Some(_) => id = id.wrapping_add(1),
                           }
                         }
+
+                        connected.insert(id, *xsecret, *HEARTBEAT).await;
+
                         if connect_id == id {
-                          connected.insert(connect_id, *xsecret, *HEARTBEAT).await;
                           info!("✅ id = {:?}\nxsecret = {:?}", id, xsecret);
                         } else {
                           // TODO 重新连接可以从这一步开始
