@@ -120,13 +120,28 @@ pub async fn recv_from(
                       let xpk: X25519PublicKey = pk.into();
                       let xsecret = x25519_secret.diffie_hellman(&xpk);
                       let xsecret = xsecret.as_bytes();
-
-                      let id = decrypt(
+                      if let Some(connect_id) = decrypt(
                         xsecret,
                         &input[PUBLIC_KEY_LENGTH_1..PUBLIC_KEY_LENGTH_1 + 12],
-                      );
+                      ) {
+                        if let Ok(connect_id) = (*connect_id).try_into() {
+                          let connect_id = u32::from_le_bytes(connect_id);
 
-                      info!("id = {:?}\nxsecret = {:?}", id, xsecret);
+                          let mut id = connect_id;
+                          loop {
+                            match connected.get(&id).await {
+                              None => break,
+                              Some(_) => id = id.wrapping_add(1),
+                            }
+                          }
+                          if connect_id == id {
+                            info!("id = {:?}\nxsecret = {:?}", id, xsecret);
+                          } else {
+                            //TODO
+                            info!("new id {} {}", CMD::ID, id);
+                          }
+                        }
+                      }
                     }
                   }
                   _ => {
