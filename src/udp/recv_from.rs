@@ -11,8 +11,12 @@ use ed25519_dalek_blake3::{ExpandedSecretKey, PublicKey, SecretKey, Signature};
 use log::{error, info};
 use retainer::Cache;
 use static_init::dynamic;
+use std::hash::Hasher;
 use std::net::SocketAddr::V4;
-use twox_hash::xxh3::{hash128, hash64};
+use twox_hash::{
+  xxh3::{hash128, hash64},
+  XxHash32,
+};
 use x25519_dalek::{PublicKey as X25519PublicKey, StaticSecret};
 use xxblake3::{decrypt, encrypt};
 
@@ -70,7 +74,6 @@ pub async fn recv_from(
   let x25519_secret: StaticSecret = secret.into();
   let public_bytes = &public.as_bytes()[..PUBLIC_KEY_LENGTH];
   let cmd_key = [&[CMD::KEY], public_bytes].concat();
-  let mut connect_id: u32 = 0;
 
   loop {
     match socket.recv_from(&mut input).await {
@@ -159,11 +162,22 @@ pub async fn recv_from(
                         let xsecret = xsecret.as_bytes();
                         // 设置id
                         // 响应加密后的id
+                        let mut hash32 = XxHash32::default();
+                        hash32.write(xsecret);
                         println!("xsecret {:?}", xsecret);
-                        connect_id = connect_id.wrapping_add(1);
-                        connected.insert(connect_id, *xsecret, *HEARTBEAT).await;
-                        let id = encrypt(xsecret, &connect_id.to_le_bytes());
-                        reply!([&cmd_key, &id[..]].concat());
+                        let mut connect_id = hash32.finish() as u32;
+
+                        loop {
+                          match connected.get(&connect_id).await {
+                            None => {
+                              connected.insert(connect_id, *xsecret, *HEARTBEAT).await;
+                              let id = encrypt(xsecret, &connect_id.to_le_bytes());
+                              reply!([&cmd_key, &id[..]].concat());
+                              break;
+                            }
+                            Some(_) => connect_id = connect_id.wrapping_add(1),
+                          }
+                        }
                       }
                     }
                   };
