@@ -118,32 +118,31 @@ pub async fn recv_from(
                       xsecret,
                       &input[PUBLIC_KEY_LENGTH_1..PUBLIC_KEY_LENGTH_1 + 12],
                     ) {
-                      if let Ok(connect_id) = (*connect_id).try_into() {
-                        if let Some(instant) = connecting.expiration(&src_bytes).await {
-                          info!("connect cost {:?}", (instant - 3 * *MSL).elapsed());
+                      let connect_id = (*connect_id).try_into().unwrap();
+                      if let Some(instant) = connecting.expiration(&src_bytes).await {
+                        info!("connect cost {:?}", (instant - 3 * *MSL).elapsed());
 
-                          connecting.remove(&src_bytes).await;
-                          ipv4_insert(src_bytes)?;
-                          unsafe { CONNECTED_TIME = now::sec() };
+                        connecting.remove(&src_bytes).await;
+                        ipv4_insert(src_bytes)?;
+                        unsafe { CONNECTED_TIME = now::sec() };
+                      }
+                      let connect_id = u32::from_le_bytes(connect_id);
+
+                      let mut id = connect_id;
+                      loop {
+                        match connected.get(&id).await {
+                          None => break,
+                          Some(_) => id = id.wrapping_add(1),
                         }
-                        let connect_id = u32::from_le_bytes(connect_id);
+                      }
 
-                        let mut id = connect_id;
-                        loop {
-                          match connected.get(&id).await {
-                            None => break,
-                            Some(_) => id = id.wrapping_add(1),
-                          }
-                        }
+                      connected.insert(id, *xsecret, *HEARTBEAT).await;
 
-                        connected.insert(id, *xsecret, *HEARTBEAT).await;
-
-                        if connect_id == id {
-                          info!("✅ id = {:?}\nxsecret = {:?}", id, xsecret);
-                        } else {
-                          // TODO 重新连接可以从这一步开始
-                          reply!([&cmd_key, &encrypt(xsecret, &id.to_le_bytes())[..]].concat());
-                        }
+                      if connect_id == id {
+                        info!("✅ id = {:?}\nxsecret = {:?}", id, xsecret);
+                      } else {
+                        // TODO 重新连接可以从这一步开始
+                        reply!([&cmd_key, &encrypt(xsecret, &id.to_le_bytes())[..]].concat());
                       }
                     } else {
                       reply!([CMD::PONG])
