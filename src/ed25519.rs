@@ -90,13 +90,3 @@ pub fn seed_new() -> [u8; 32] {
     }
   }
 }
-
-pub fn seed() -> [u8; 32] {
-  let seed = config_get!(seed, {
-    base64::encode_config(seed_new(), base64::URL_SAFE_NO_PAD)
-  });
-  base64::decode_config(seed, base64::URL_SAFE_NO_PAD)
-    .unwrap()
-    .try_into()
-    .unwrap()
-}

@@ -1,7 +1,8 @@
 use crate::args::DIR;
+use crate::ed25519::seed_new;
 use crate::util::now;
 use anyhow::Result;
-pub use persy::{Config, Persy, ValueMode};
+pub use persy::{ByteVec, Config, Persy, ValueMode};
 use static_init::dynamic;
 use std::path::{Path, PathBuf};
 
@@ -10,6 +11,7 @@ pub static DB_FILE: PathBuf = Path::new(&*DIR).join("rmw.persy");
 
 #[allow(non_upper_case_globals)]
 pub mod db {
+  pub const config: &str = "config";
   pub const ipv4_time: &str = "ipv4Time";
   pub const time_ipv4: &str = "timeIpv4";
   pub const id_public: &str = "idPublic";
@@ -20,6 +22,7 @@ pub mod db {
 pub static TX: Persy = {
   Persy::open_or_create_with(&*DB_FILE, Config::new(), |p| {
     let mut tx = p.begin()?;
+    tx.create_index::<ByteVec, ByteVec>(db::config, ValueMode::Replace)?;
     tx.create_index::<[u8; 6], u64>(db::ipv4_time, ValueMode::Replace)?;
     tx.create_index::<u64, [u8; 6]>(db::time_ipv4, ValueMode::Cluster)?;
     //tx.create_segment(db::ipv4)?;
@@ -28,6 +31,16 @@ pub static TX: Persy = {
   })
   .unwrap()
 };
+
+pub fn seed() -> [u8; 32] {
+  let seed = config_get!(seed, {
+    base64::encode_config(seed_new(), base64::URL_SAFE_NO_PAD)
+  });
+  base64::decode_config(seed, base64::URL_SAFE_NO_PAD)
+    .unwrap()
+    .try_into()
+    .unwrap()
+}
 
 pub fn ipv4_insert(addr: [u8; 6]) -> Result<bool> {
   let mut now = now::sec();

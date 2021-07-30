@@ -1,5 +1,5 @@
 use crate::db::ipv4_insert;
-use crate::ed25519::seed;
+use crate::db::seed;
 use crate::util::addr_to_bytes::ToBytes;
 use crate::util::{leading_zero, now};
 use crate::var::cmd::CMD;
