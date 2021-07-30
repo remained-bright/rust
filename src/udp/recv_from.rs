@@ -110,13 +110,6 @@ pub async fn recv_from(
                   }
                   PUBLIC_KEY_LENGTH_13 => {
                     let src_bytes = src.to_bytes();
-                    if let Some(instant) = connecting.expiration(&src_bytes).await {
-                      info!("connect cost {:?}", (instant - 3 * *MSL).elapsed());
-
-                      connecting.remove(&src_bytes).await;
-                      ipv4_insert(src_bytes)?;
-                      unsafe { CONNECTED_TIME = now::sec() };
-                    }
                     let pk = public_key_from_bytes(&input[1..PUBLIC_KEY_LENGTH_1]);
                     let xpk: X25519PublicKey = pk.into();
                     let xsecret = x25519_secret.diffie_hellman(&xpk);
@@ -126,6 +119,13 @@ pub async fn recv_from(
                       &input[PUBLIC_KEY_LENGTH_1..PUBLIC_KEY_LENGTH_1 + 12],
                     ) {
                       if let Ok(connect_id) = (*connect_id).try_into() {
+                        if let Some(instant) = connecting.expiration(&src_bytes).await {
+                          info!("connect cost {:?}", (instant - 3 * *MSL).elapsed());
+
+                          connecting.remove(&src_bytes).await;
+                          ipv4_insert(src_bytes)?;
+                          unsafe { CONNECTED_TIME = now::sec() };
+                        }
                         let connect_id = u32::from_le_bytes(connect_id);
 
                         let mut id = connect_id;
@@ -145,6 +145,8 @@ pub async fn recv_from(
                           reply!([&cmd_key, &encrypt(xsecret, &id.to_le_bytes())[..]].concat());
                         }
                       }
+                    } else {
+                      reply!([CMD::PONG])
                     }
                   }
                   _ => {
