@@ -127,8 +127,6 @@ pub async fn recv_from(
                         match connected.get(&id).await {
                           None => break,
                           Some(val) => {
-                            println!("val = {:?}", &*val);
-                            println!(">> xsecret = {:?}", xsecret);
                             if &*val == xsecret {
                               break;
                             }
@@ -204,7 +202,14 @@ pub async fn recv_from(
                               reply!([&cmd_key, &id[..]].concat());
                               break;
                             }
-                            Some(_) => connect_id = connect_id.wrapping_add(1),
+                            Some(val) => {
+                              if &*val == xsecret {
+                                let id = encrypt(xsecret, &connect_id.to_le_bytes());
+                                reply!([&cmd_key, &id[..]].concat());
+                                break;
+                              }
+                              connect_id = connect_id.wrapping_add(1)
+                            }
                           }
                         }
                       }
