@@ -6,7 +6,7 @@ use crate::db::ipv4_offline;
 use crate::udp::recv_from::{recv_from, CONNECTED_TIME};
 use crate::udp::timer::timer;
 use crate::util::now;
-use crate::var::duration::{HEARTBEAT, MSL};
+use crate::var::duration::{HEARTBEAT_TIMEOUT, MSL};
 use anyhow::Result;
 use async_std::net::UdpSocket;
 use log::error;
@@ -35,7 +35,7 @@ pub async fn listen(addr: String) -> Result<()> {
     })(),
     timer(&socket, &connecting),
     recv_from(&socket, &connecting, &connected),
-    connected.monitor(2, 1, *HEARTBEAT, &|kvli| {
+    connected.monitor(2, 1, *HEARTBEAT_TIMEOUT, &|kvli| {
       if kvli.len() > 0 {
         for (k, v) in kvli {
           info!("{} {:?} HEARTBEAT EXPIRE", k, v)

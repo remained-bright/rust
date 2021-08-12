@@ -3,7 +3,7 @@ use crate::db::seed;
 use crate::util::addr_to_bytes::ToBytes;
 use crate::util::{leading_zero, now};
 use crate::var::cmd::CMD;
-use crate::var::duration::{HEARTBEAT, MSL};
+use crate::var::duration::{HEARTBEAT_TIMEOUT, MSL};
 use anyhow::Result;
 use async_std::net::UdpSocket;
 use bytes::BytesMut;
@@ -119,13 +119,6 @@ pub async fn recv_from(
                       &input[PUBLIC_KEY_LENGTH_1..PUBLIC_KEY_LENGTH_1 + 12],
                     ) {
                       let connect_id = (*connect_id).try_into().unwrap();
-                      if let Some(instant) = connecting.expiration(&src_bytes).await {
-                        info!("connect cost {:?}", (instant - 3 * *MSL).elapsed());
-
-                        connecting.remove(&src_bytes).await;
-                        ipv4_insert(src_bytes)?;
-                        unsafe { CONNECTED_TIME = now::sec() };
-                      }
                       let connect_id = u32::from_le_bytes(connect_id);
 
                       let mut id = connect_id;
@@ -136,9 +129,16 @@ pub async fn recv_from(
                         }
                       }
 
-                      connected.insert(id, *xsecret, *HEARTBEAT).await;
+                      connected.insert(id, *xsecret, *HEARTBEAT_TIMEOUT).await;
 
                       if connect_id == id {
+                        if let Some(instant) = connecting.expiration(&src_bytes).await {
+                          info!("connect cost {:?}", (instant - 3 * *MSL).elapsed());
+
+                          connecting.remove(&src_bytes).await;
+                          ipv4_insert(src_bytes)?;
+                          unsafe { CONNECTED_TIME = now::sec() };
+                        }
                         info!("✅ id = {:?}\nxsecret = {:?}", id, xsecret);
                       } else {
                         // TODO 重新连接可以从这一步开始
@@ -189,7 +189,9 @@ pub async fn recv_from(
                         loop {
                           match connected.get(&connect_id).await {
                             None => {
-                              connected.insert(connect_id, *xsecret, *HEARTBEAT).await;
+                              connected
+                                .insert(connect_id, *xsecret, *HEARTBEAT_TIMEOUT)
+                                .await;
                               let id = encrypt(xsecret, &connect_id.to_le_bytes());
                               reply!([&cmd_key, &id[..]].concat());
                               break;
