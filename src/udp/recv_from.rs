@@ -127,6 +127,8 @@ pub async fn recv_from(
                         match connected.get(&id).await {
                           None => break,
                           Some(val) => {
+                            println!("val = {:?}", &*val);
+                            println!(">> xsecret = {:?}", xsecret);
                             if &*val == xsecret {
                               break;
                             }
