@@ -192,23 +192,23 @@ pub async fn recv_from(
                         let mut connect_id = hash32.finish() as u32;
 
                         loop {
-                          match connected.get(&connect_id).await {
-                            None => {
-                              connected
-                                .insert(connect_id, *xsecret, *HEARTBEAT_TIMEOUT)
-                                .await;
-                              let id = encrypt(xsecret, &connect_id.to_le_bytes());
-                              reply!([&cmd_key, &id[..]].concat());
-                              break;
-                            }
+                          if match connected.get(&connect_id).await {
+                            None => true,
                             Some(val) => {
                               if &*val == xsecret {
-                                let id = encrypt(xsecret, &connect_id.to_le_bytes());
-                                reply!([&cmd_key, &id[..]].concat());
-                                break;
+                                true
+                              } else {
+                                connect_id = connect_id.wrapping_add(1);
+                                false
                               }
-                              connect_id = connect_id.wrapping_add(1)
                             }
+                          } {
+                            connected
+                              .insert(connect_id, *xsecret, *HEARTBEAT_TIMEOUT)
+                              .await;
+                            let id = encrypt(xsecret, &connect_id.to_le_bytes());
+                            reply!([&cmd_key, &id[..]].concat());
+                            break;
                           }
                         }
                       }
