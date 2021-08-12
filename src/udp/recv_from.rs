@@ -126,7 +126,12 @@ pub async fn recv_from(
                       loop {
                         match connected.get(&id).await {
                           None => break,
-                          Some(_) => id = id.wrapping_add(1),
+                          Some(val) => {
+                            if &*val == xsecret {
+                              break;
+                            }
+                            id = id.wrapping_add(1)
+                          }
                         }
                       }
 
