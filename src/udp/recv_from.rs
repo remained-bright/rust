@@ -94,7 +94,6 @@ pub async fn recv_from(
               match input[0] {
                 CMD::PING => reply!([CMD::PONG]),
                 CMD::PONG => {
-                  info!("pong {:?}", src);
                   if connecting.renew(&src.to_bytes(), *MSL).await {
                     reply!(cmd_key);
                   }
