@@ -85,6 +85,7 @@ pub fn seed_new() -> [u8; 32] {
         }
       }
       Some(seed) => {
+        print!("\n");
         return seed;
       }
     }
