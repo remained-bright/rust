@@ -8,7 +8,7 @@ use std::net::{Ipv4Addr, SocketAddrV4};
 struct Kad {
   id: [u8; 32],
   bucket: SmallVec<[SmallVec<[[u8; 6]; 512]>; 256]>,
-  exist: HashMap<Ipv4Addr, [u8; 32]>,
+  exist: HashMap<Ipv4Addr, u8>,
   connecting: Cache<[u8; 6], ()>,
 }
 
@@ -19,9 +19,10 @@ impl Kad {
   pub fn add(&mut self, key: [u8; 32], ip_port: SocketAddrV4) {
     let ip = ip_port.ip();
     if let Some(_) = self.exist.get(ip) {
-      self.exist.insert(ip.clone(), key);
-
       let distance = same_prefix(key, self.id) as usize;
+
+      self.exist.insert(ip.clone(), distance as u8);
+
       if distance >= 256 {
         return;
       }
