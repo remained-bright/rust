@@ -61,7 +61,7 @@ pub async fn recv_from(
 ) -> Result<()> {
   macro_rules! send_to {
     ($val:expr, $addr:expr) => {
-      Await!(socket.send_to(&$val, $addr));
+      Await!(socket.send_to(&$val, $addr))
     };
   }
 
@@ -81,7 +81,7 @@ pub async fn recv_from(
       Ok((n, src)) => {
         macro_rules! reply {
           ($val:expr) => {
-            send_to!($val, src);
+            send_to!($val, src)
           };
           ($cmd:expr, $val:expr) => {
             reply!([&[$cmd], &$val[..]].concat());

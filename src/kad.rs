@@ -1,17 +1,13 @@
 use crate::util::same_prefix::same_prefix;
-use ed25519_dalek_blake3::PublicKey;
+use hashbrown::HashSet;
 use retainer::Cache;
 use smallvec::SmallVec;
-use std::net::Ipv4Addr;
-
-pub struct Node {
-  addr: Ipv4Addr,
-  key: PublicKey,
-}
+use std::net::{Ipv4Addr, SocketAddrV4};
 
 struct Kad {
   id: [u8; 32],
-  bucket: SmallVec<[SmallVec<[Node; 8]>; 256]>,
+  bucket: SmallVec<[SmallVec<[[u8; 32]; 1024]>; 256]>,
+  exist: HashSet<Ipv4Addr>,
   connecting: Cache<[u8; 6], ()>,
 }
 
@@ -19,8 +15,13 @@ struct Kad {
 
 impl Kad {
   pub fn boot() {}
-  pub fn add(node: Node) -> bool {
-    false
+  pub fn add(&mut self, key: [u8; 32], ip_port: SocketAddrV4) {
+    let ip = ip_port.ip();
+    if let Some(_) = self.exist.get(ip) {
+      self.exist.insert(ip.clone());
+      let n = same_prefix(key, self.id);
+      if (n as usize) > self.bucket.len() {}
+    }
   }
   pub fn neighbor(&self, key: [u8; 32]) -> bool {
     false
