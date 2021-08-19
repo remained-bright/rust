@@ -60,7 +60,8 @@ impl Kad {
 
   fn split(&mut self, ip_port: SocketAddrV4) {
     let mut bucket = SmallVec::new();
-    bucket.push(ip_port);
+    bucket.push(ip_port.to_bytes());
+    self.bucket.push(bucket);
   }
 
   pub fn neighbor(&self, key: [u8; 32]) -> bool {
