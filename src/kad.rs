@@ -1,4 +1,5 @@
 use crate::util::addr_to_bytes::ToBytes;
+use crate::util::bytes_to_addr::v4;
 use crate::util::same_prefix::same_prefix;
 use hashbrown::HashMap;
 use retainer::Cache;
@@ -57,13 +58,21 @@ impl Kad {
   }
 
   fn split(&mut self, ip_port: SocketAddrV4) {
-    let mut bucket = SmallVec::new();
-    bucket.push(ip_port.to_bytes());
     let len = self.bucket.len();
+
+    let mut bucket1 = SmallVec::new();
+    let mut bucket2 = smallvec![ip_port.to_bytes()];
+
     for i in &self.bucket[len - 1] {
-      println!("todo {:?}", i);
+      let i = i.clone();
+      if self.exist[v4(i).ip()] as usize == len {
+        bucket1.push(i);
+      } else {
+        bucket2.push(i);
+      }
     }
-    self.bucket.push(bucket);
+    self.bucket.push(bucket1);
+    self.bucket.push(bucket2);
   }
 
   pub fn neighbor(&self, key: [u8; 32]) -> bool {
