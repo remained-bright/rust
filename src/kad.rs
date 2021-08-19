@@ -2,7 +2,7 @@ use crate::util::addr_to_bytes::ToBytes;
 use crate::util::same_prefix::same_prefix;
 use hashbrown::HashMap;
 use retainer::Cache;
-use smallvec::SmallVec;
+use smallvec::{smallvec, SmallVec};
 use std::net::{Ipv4Addr, SocketAddrV4};
 
 struct Kad {
@@ -29,9 +29,7 @@ impl Kad {
 
       let mut len = self.bucket.len();
       if len == 0 {
-        let mut bucket = SmallVec::new();
-        bucket.push(ip_port.to_bytes());
-        self.bucket.push(bucket);
+        self.bucket.push(smallvec![ip_port.to_bytes()]);
         return;
       }
 
@@ -61,6 +59,9 @@ impl Kad {
   fn split(&mut self, ip_port: SocketAddrV4) {
     let mut bucket = SmallVec::new();
     bucket.push(ip_port.to_bytes());
+    for i in &self.bucket[self.bucket.len() - 1] {
+      println!("todo {:?}", i);
+    }
     self.bucket.push(bucket);
   }
 
