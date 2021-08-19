@@ -9,7 +9,7 @@ struct Kad {
   id: [u8; 32],
   bucket: SmallVec<[SmallVec<[[u8; 6]; 512]>; 256]>,
   exist: HashMap<Ipv4Addr, u8>,
-  connecting: Cache<[u8; 6], ()>,
+  connecting: Cache<Ipv4Addr, ()>,
 }
 
 // leading_zeros
@@ -40,15 +40,16 @@ impl Kad {
       if distance > len {
         let bucket = &mut self.bucket[distance];
         let bucket_len = bucket.len();
-        if bucket_len >= 32 {
-          //split
+        if bucket_len >= 512 {
+          self.split(ip_port);
         } else {
           bucket.insert(0, ip_port.to_bytes());
         }
       } else {
         let bucket = &mut self.bucket[distance];
         let bucket_len = bucket.len();
-        if bucket_len >= 32 {
+        if bucket_len >= 512 {
+          self.split(ip_port);
           // test
         } else {
           bucket.insert(0, ip_port.to_bytes());
@@ -56,6 +57,12 @@ impl Kad {
       }
     }
   }
+
+  fn split(&mut self, ip_port: SocketAddrV4) {
+    let mut bucket = SmallVec::new();
+    bucket.push(ip_port);
+  }
+
   pub fn neighbor(&self, key: [u8; 32]) -> bool {
     false
   }
