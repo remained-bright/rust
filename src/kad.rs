@@ -29,8 +29,8 @@ impl Kad {
       let mut len = self.bucket.len();
       if len == 0 {
         let mut bucket = SmallVec::new();
-        bucket.insert(0, ip_port.to_bytes());
-        self.bucket.insert(0, bucket);
+        bucket.push(ip_port.to_bytes());
+        self.bucket.push(bucket);
         return;
       }
 
@@ -42,7 +42,7 @@ impl Kad {
         if bucket_len >= 32 {
           //split
         } else {
-          bucket.insert(bucket_len, ip_port.to_bytes());
+          bucket.insert(0, ip_port.to_bytes());
         }
       } else {
         let bucket = &mut self.bucket[distance];
@@ -50,7 +50,7 @@ impl Kad {
         if bucket_len >= 32 {
           // test
         } else {
-          bucket.insert(bucket_len, ip_port.to_bytes());
+          bucket.insert(0, ip_port.to_bytes());
         }
       }
     }
