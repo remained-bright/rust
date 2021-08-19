@@ -59,7 +59,8 @@ impl Kad {
   fn split(&mut self, ip_port: SocketAddrV4) {
     let mut bucket = SmallVec::new();
     bucket.push(ip_port.to_bytes());
-    for i in &self.bucket[self.bucket.len() - 1] {
+    let len = self.bucket.len();
+    for i in &self.bucket[len - 1] {
       println!("todo {:?}", i);
     }
     self.bucket.push(bucket);
