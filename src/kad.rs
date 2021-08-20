@@ -4,18 +4,23 @@ use crate::util::same_prefix::same_prefix;
 use hashbrown::HashMap;
 use retainer::Cache;
 use smallvec::{smallvec, SmallVec};
+use static_init::dynamic;
 use std::net::{Ipv4Addr, SocketAddrV4};
 
 const RETURN_SIZE: usize = 128;
 const BUCKET_SIZE: usize = RETURN_SIZE * 2;
 
+#[derive(Default)]
 pub struct Kad {
   id: [u8; 32],
   bucket: SmallVec<[SmallVec<[[u8; 6]; BUCKET_SIZE]>; 256]>,
   exist: HashMap<Ipv4Addr, u8>,
-  count: usize,
+  pub len: usize,
   connecting: Cache<Ipv4Addr, ()>,
 }
+
+#[dynamic]
+pub static KAD: Kad = Kad::default();
 
 // leading_zeros
 
@@ -41,7 +46,7 @@ impl Kad {
       len -= 1;
 
       if distance > len {
-        self.count += 1;
+        self.len += 1;
         let bucket = &mut self.bucket[distance];
         let bucket_len = bucket.len();
         if bucket_len < BUCKET_SIZE {
@@ -53,7 +58,7 @@ impl Kad {
         let bucket = &mut self.bucket[distance];
         let bucket_len = bucket.len();
         if bucket_len < BUCKET_SIZE {
-          self.count += 1;
+          self.len += 1;
           bucket.insert(0, ip_port.to_bytes());
         }
       }

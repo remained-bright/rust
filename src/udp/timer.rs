@@ -1,5 +1,5 @@
 use crate::db::{db, TX};
-use crate::kad::Kad;
+use crate::kad::KAD;
 use crate::util::addr_to_bytes::ToBytes;
 use crate::util::bytes_to_addr;
 use crate::var::cmd::CMD;
@@ -65,7 +65,7 @@ pub async fn timer(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) {
   let duration = Duration::from_secs(1);
   loop {
     sleep(duration).await;
-    println!("loop ...");
+    println!("kad len {}", KAD.len);
   }
   /*
   let mut interval = stream::interval(Duration::from_secs(10));
