@@ -3,8 +3,11 @@ use crate::db::seed;
 use crate::kad::KAD;
 use crate::util::addr_to_bytes::ToBytes;
 use crate::util::{leading_zero, now};
-use crate::var::cmd::CMD;
-use crate::var::duration::{HEARTBEAT_TIMEOUT, MSL};
+use crate::var::{
+  cmd::CMD,
+  duration::{HEARTBEAT_TIMEOUT, MSL},
+  len::PUBLIC_KEY_LENGTH,
+};
 use anyhow::Result;
 use async_std::net::UdpSocket;
 use bytes::BytesMut;
@@ -47,7 +50,6 @@ pub static MTU: usize = {
 pub static mut CONNECTED_TIME: u64 = 0;
 pub const QA_LEADING_ZERO: u32 = 16;
 
-pub const PUBLIC_KEY_LENGTH: usize = 30;
 fn public_key_from_bytes(bytes: &[u8]) -> PublicKey {
   PublicKey::from_bytes(&[bytes, &[0, 0]].concat()).unwrap()
 }

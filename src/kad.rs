@@ -1,18 +1,18 @@
 use crate::util::addr_to_bytes::ToBytes;
 use crate::util::bytes_to_addr::v4;
 use crate::util::same_prefix::same_prefix;
+use crate::var::len::PUBLIC_KEY_LENGTH;
 use hashbrown::HashMap;
 use retainer::Cache;
 use smallvec::{smallvec, SmallVec};
 use static_init::dynamic;
 use std::net::{Ipv4Addr, SocketAddrV4};
-
 const RETURN_SIZE: usize = 128;
 const BUCKET_SIZE: usize = RETURN_SIZE * 2;
 
 #[derive(Default)]
 pub struct Kad {
-  id: [u8; 30],
+  id: [u8; PUBLIC_KEY_LENGTH],
   bucket: SmallVec<[SmallVec<[[u8; 6]; BUCKET_SIZE]>; 256]>,
   exist: HashMap<Ipv4Addr, u8>,
   pub len: usize,
@@ -26,7 +26,7 @@ pub static mut KAD: Kad = Kad::default();
 
 impl Kad {
   pub fn boot() {}
-  pub fn add(&mut self, key: [u8; 30], ip_port: SocketAddrV4) {
+  pub fn add(&mut self, key: [u8; PUBLIC_KEY_LENGTH], ip_port: SocketAddrV4) {
     let ip = ip_port.ip();
     if let None = self.exist.get(ip) {
       let distance = same_prefix(key, self.id) as usize;
@@ -85,7 +85,7 @@ impl Kad {
     self.bucket.push(bucket2);
   }
 
-  pub fn neighbor(&self, key: [u8; 30]) -> bool {
+  pub fn neighbor(&self, key: [u8; PUBLIC_KEY_LENGTH]) -> bool {
     false
   }
 }
