@@ -20,7 +20,7 @@ pub struct Kad {
 }
 
 #[dynamic]
-pub static KAD: Kad = Kad::default();
+pub static mut KAD: Kad = Kad::default();
 
 // leading_zeros
 

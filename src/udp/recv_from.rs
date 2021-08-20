@@ -1,5 +1,6 @@
 use crate::db::ipv4_insert;
 use crate::db::seed;
+use crate::kad::KAD;
 use crate::util::addr_to_bytes::ToBytes;
 use crate::util::{leading_zero, now};
 use crate::var::cmd::CMD;
@@ -180,7 +181,10 @@ pub async fn recv_from(
 
                     if hash64(&[hash, &token].concat()).leading_zeros() >= QA_LEADING_ZERO {
                       let pk = public_key_from_bytes(key);
+
                       if let Ok(_) = pk.verify_strict(hash, &sign) {
+                        KAD.write().add((*key).try_into().unwrap(), src);
+
                         let xpk: X25519PublicKey = pk.into();
                         let xsecret = x25519_secret.diffie_hellman(&xpk);
                         let xsecret = xsecret.as_bytes();
