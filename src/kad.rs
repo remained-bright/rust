@@ -18,6 +18,7 @@ pub struct Kad {
   pub len: usize,
 }
 
+// ping pos
 // 定期pop最后一个，有响应就会插入，没有响应就会丢弃
 
 #[dynamic]
@@ -50,7 +51,7 @@ impl Kad {
         self.len += 1;
         let bucket = &mut self.bucket[len];
         if bucket.len() < BUCKET_SIZE {
-          bucket.insert(0, ip_port.to_bytes());
+          bucket.push(ip_port.to_bytes());
         } else {
           self.split(ip_port);
         }
@@ -58,7 +59,7 @@ impl Kad {
         let bucket = &mut self.bucket[distance];
         if bucket.len() < BUCKET_SIZE {
           self.len += 1;
-          bucket.insert(0, ip_port.to_bytes());
+          bucket.push(ip_port.to_bytes());
         }
       }
     }
