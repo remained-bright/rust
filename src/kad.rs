@@ -48,7 +48,7 @@ impl Kad {
 
       if distance > len {
         self.len += 1;
-        let bucket = &mut self.bucket[distance];
+        let bucket = &mut self.bucket[len];
         let bucket_len = bucket.len();
         if bucket_len < BUCKET_SIZE {
           bucket.insert(0, ip_port.to_bytes());
