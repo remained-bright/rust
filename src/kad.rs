@@ -9,7 +9,7 @@ use std::net::{Ipv4Addr, SocketAddrV4};
 const RETURN_SIZE: usize = 128;
 const BUCKET_SIZE: usize = RETURN_SIZE * 2;
 
-struct Kad {
+pub struct Kad {
   id: [u8; 32],
   bucket: SmallVec<[SmallVec<[[u8; 6]; BUCKET_SIZE]>; 256]>,
   exist: HashMap<Ipv4Addr, u8>,

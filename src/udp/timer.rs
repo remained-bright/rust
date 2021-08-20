@@ -1,11 +1,14 @@
 use crate::db::{db, TX};
+use crate::kad::Kad;
 use crate::util::addr_to_bytes::ToBytes;
 use crate::util::bytes_to_addr;
 use crate::var::cmd::CMD;
 use crate::var::duration::MSL;
 use async_std::net::UdpSocket;
+use async_std::task::sleep;
 use log::{error, info};
 use retainer::Cache;
+use std::time::Duration;
 use std::{net::SocketAddrV4, str::FromStr};
 
 fn error_tip(ip: &str) {
@@ -59,6 +62,11 @@ pub async fn boot(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) {
 pub async fn timer(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) {
   // 可能网络故障导致连接失败，所以每10秒尝试一次重新连接
   boot(socket, connecting).await;
+  let duration = Duration::from_secs(1);
+  loop {
+    sleep(duration).await;
+    println!("loop ...");
+  }
   /*
   let mut interval = stream::interval(Duration::from_secs(10));
   while let Some(_) = interval.next().await {

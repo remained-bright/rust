@@ -8,7 +8,7 @@ use crate::udp::timer::timer;
 use crate::util::now;
 use crate::var::duration::{HEARTBEAT_TIMEOUT, MSL};
 use anyhow::Result;
-use async_std::{net::UdpSocket, task::sleep};
+use async_std::net::UdpSocket;
 use log::error;
 use log::info;
 use retainer::Cache;
@@ -26,13 +26,6 @@ pub async fn listen(addr: String) -> Result<()> {
   println!("{:?}", socket.local_addr().unwrap());
 
   let err = futures::join!(
-    (async || {
-      let duration = Duration::from_secs(1);
-      loop {
-        sleep(duration).await;
-        println!("loop ...");
-      }
-    })(),
     (async || {
       if let Ok(true) = config_get!(upnp, { true.to_string() }).parse() {
         if let Ok(addr) = socket.local_addr() {
