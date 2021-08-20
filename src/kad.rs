@@ -6,10 +6,14 @@ use retainer::Cache;
 use smallvec::{smallvec, SmallVec};
 use std::net::{Ipv4Addr, SocketAddrV4};
 
+const RETURN_SIZE: usize = 128;
+const BUCKET_SIZE: usize = RETURN_SIZE * 2;
+
 struct Kad {
   id: [u8; 32],
-  bucket: SmallVec<[SmallVec<[[u8; 6]; 512]>; 256]>,
+  bucket: SmallVec<[SmallVec<[[u8; 6]; BUCKET_SIZE]>; 256]>,
   exist: HashMap<Ipv4Addr, u8>,
+  count: usize,
   connecting: Cache<Ipv4Addr, ()>,
 }
 
@@ -24,7 +28,7 @@ impl Kad {
 
       self.exist.insert(ip.clone(), distance as u8);
 
-      if distance >= 256 {
+      if distance == 256 {
         return;
       }
 
@@ -37,20 +41,19 @@ impl Kad {
       len -= 1;
 
       if distance > len {
+        self.count += 1;
         let bucket = &mut self.bucket[distance];
         let bucket_len = bucket.len();
-        if bucket_len >= 512 {
-          self.split(ip_port);
-        } else {
+        if bucket_len < BUCKET_SIZE {
           bucket.insert(0, ip_port.to_bytes());
+        } else {
+          self.split(ip_port);
         }
       } else {
         let bucket = &mut self.bucket[distance];
         let bucket_len = bucket.len();
-        if bucket_len >= 512 {
-          self.split(ip_port);
-          // test
-        } else {
+        if bucket_len < BUCKET_SIZE {
+          self.count += 1;
           bucket.insert(0, ip_port.to_bytes());
         }
       }
@@ -59,16 +62,17 @@ impl Kad {
 
   fn split(&mut self, ip_port: SocketAddrV4) {
     let len = self.bucket.len();
-
     let mut bucket1 = SmallVec::new();
     let mut bucket2 = smallvec![ip_port.to_bytes()];
 
-    for i in &self.bucket[len - 1] {
-      let i = i.clone();
-      if self.exist[v4(i).ip()] as usize == len {
-        bucket1.push(i);
-      } else {
-        bucket2.push(i);
+    if let Some(bucket) = self.bucket.pop() {
+      for i in bucket {
+        let i = i.clone();
+        if self.exist[v4(i).ip()] as usize == len {
+          bucket1.push(i);
+        } else {
+          bucket2.push(i);
+        }
       }
     }
     self.bucket.push(bucket1);
