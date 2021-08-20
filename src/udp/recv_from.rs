@@ -111,7 +111,8 @@ pub async fn recv_from(
                   }
                   PUBLIC_KEY_LENGTH_13 => {
                     let src_bytes = src.to_bytes();
-                    let pk = public_key_from_bytes(&input[1..PUBLIC_KEY_LENGTH_1]);
+                    let key = &input[1..PUBLIC_KEY_LENGTH_1];
+                    let pk = public_key_from_bytes(key);
                     let xpk: X25519PublicKey = pk.into();
                     let xsecret = x25519_secret.diffie_hellman(&xpk);
                     let xsecret = xsecret.as_bytes();
@@ -145,6 +146,8 @@ pub async fn recv_from(
                           ipv4_insert(src_bytes)?;
                           unsafe { CONNECTED_TIME = now::sec() };
                         }
+
+                        KAD.write().add((*key).try_into().unwrap(), src);
                         info!("✅ id = {:?}\nxsecret = {:?}", id, xsecret);
                       } else {
                         // TODO 重新连接可以从这一步开始

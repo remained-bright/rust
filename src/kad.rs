@@ -12,7 +12,7 @@ const BUCKET_SIZE: usize = RETURN_SIZE * 2;
 
 #[derive(Default)]
 pub struct Kad {
-  id: [u8; 32],
+  id: [u8; 30],
   bucket: SmallVec<[SmallVec<[[u8; 6]; BUCKET_SIZE]>; 256]>,
   exist: HashMap<Ipv4Addr, u8>,
   pub len: usize,
@@ -26,9 +26,9 @@ pub static mut KAD: Kad = Kad::default();
 
 impl Kad {
   pub fn boot() {}
-  pub fn add(&mut self, key: [u8; 32], ip_port: SocketAddrV4) {
+  pub fn add(&mut self, key: [u8; 30], ip_port: SocketAddrV4) {
     let ip = ip_port.ip();
-    if let Some(_) = self.exist.get(ip) {
+    if let None = self.exist.get(ip) {
       let distance = same_prefix(key, self.id) as usize;
 
       self.exist.insert(ip.clone(), distance as u8);
@@ -40,6 +40,7 @@ impl Kad {
       let mut len = self.bucket.len();
       if len == 0 {
         self.bucket.push(smallvec![ip_port.to_bytes()]);
+        self.len = 1;
         return;
       }
 
@@ -84,7 +85,7 @@ impl Kad {
     self.bucket.push(bucket2);
   }
 
-  pub fn neighbor(&self, key: [u8; 32]) -> bool {
+  pub fn neighbor(&self, key: [u8; 30]) -> bool {
     false
   }
 }
