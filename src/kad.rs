@@ -25,7 +25,6 @@ pub static mut KAD: Kad = Kad::default();
 // leading_zeros
 
 impl Kad {
-  pub fn boot() {}
   pub fn add(&mut self, key: [u8; PUBLIC_KEY_LENGTH], ip_port: SocketAddrV4) {
     let ip = ip_port.ip();
     if let None = self.exist.get(ip) {
@@ -49,16 +48,14 @@ impl Kad {
       if distance > len {
         self.len += 1;
         let bucket = &mut self.bucket[len];
-        let bucket_len = bucket.len();
-        if bucket_len < BUCKET_SIZE {
+        if bucket.len() < BUCKET_SIZE {
           bucket.insert(0, ip_port.to_bytes());
         } else {
           self.split(ip_port);
         }
       } else {
         let bucket = &mut self.bucket[distance];
-        let bucket_len = bucket.len();
-        if bucket_len < BUCKET_SIZE {
+        if bucket.len() < BUCKET_SIZE {
           self.len += 1;
           bucket.insert(0, ip_port.to_bytes());
         }
