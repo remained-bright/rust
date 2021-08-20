@@ -16,8 +16,9 @@ pub struct Kad {
   bucket: SmallVec<[SmallVec<[[u8; 6]; BUCKET_SIZE]>; 256]>,
   exist: HashMap<Ipv4Addr, u8>,
   pub len: usize,
-  connecting: Cache<Ipv4Addr, ()>,
 }
+
+// 定期pop最后一个，有响应就会插入，没有响应就会丢弃
 
 #[dynamic]
 pub static mut KAD: Kad = Kad::default();
