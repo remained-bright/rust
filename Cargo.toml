@@ -43,6 +43,7 @@ num_cpus = "1.13.0"
 base64 = "0.13.0"
 smallvec = "1.6.1"
 hashbrown = "0.11.2"
+rusqlite = {version="0.25.3",features=["bundled","functions"]}
 #notify = "4.0.17"
 #bus = "2.2.3"
 #lru_time_cache = "0.11.11"
