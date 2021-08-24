@@ -7,6 +7,7 @@ use retainer::Cache;
 use smallvec::{smallvec, SmallVec};
 use static_init::dynamic;
 use std::net::{Ipv4Addr, SocketAddrV4};
+
 const RETURN_SIZE: usize = 128;
 const BUCKET_SIZE: usize = RETURN_SIZE * 2;
 
