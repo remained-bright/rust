@@ -23,6 +23,7 @@ pub async fn boot() {
   //init_sqlite().unwrap();
   //info!("> {:?}", std::env::current_exe().unwrap().parent().unwrap());
   // db::init().await;
+  db::init().unwrap();
   let err = futures::join!(
     listen!(udp, { format!("0.0.0.0:{}", find_port()) }),
     listen!(grpc, { "0.0.0.0:2080".to_string() }),

@@ -14,6 +14,7 @@ mod ed25519;
 mod file;
 mod grpc;
 mod kad;
+mod seed;
 mod udp;
 mod util;
 mod var;

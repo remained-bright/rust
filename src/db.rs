@@ -1,28 +1,30 @@
 use crate::args::DIR;
-use crate::ed25519::seed_new;
+use anyhow::Result;
+use r2d2::Pool;
+use r2d2_sqlite::SqliteConnectionManager;
 use static_init::dynamic;
-use std::fs::File;
-use std::io::{BufWriter, Read, Write};
+use std::include_bytes;
 use std::path::{Path, PathBuf};
 
 #[dynamic]
 pub static DB_FILE: PathBuf = Path::new(&*DIR).join("rmw.db");
 
-pub fn seed() -> [u8; 32] {
-  let p = Path::new(&*DIR).join("seed");
-  if p.exists() {
-    let mut data = Vec::new();
+#[dynamic]
+pub static POOL: Pool<SqliteConnectionManager> =
+  Pool::new(SqliteConnectionManager::file(&*DB_FILE)).unwrap();
 
-    File::open(&p).unwrap().read_to_end(&mut data).unwrap();
-    if let Ok(r) = data.try_into() {
-      return r;
-    }
+pub fn init() -> Result<()> {
+  let c = POOL.get()?;
+  if 0
+    == c.query_row(
+      "SELECT count(1) FROM sqlite_master WHERE type='table'",
+      [],
+      |row| row.get(0),
+    )?
+  {
+    println!("{}", &include_bytes!("db.sql"));
   }
-  let seed = seed_new();
-  BufWriter::new(File::create(&p).unwrap())
-    .write_all(&seed)
-    .unwrap();
-  seed
+  Ok(())
 }
 
 pub fn ipv4_insert(addr: [u8; 6]) -> anyhow::Result<bool> {

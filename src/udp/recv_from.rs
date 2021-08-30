@@ -1,6 +1,6 @@
 use crate::db::ipv4_insert;
-use crate::db::seed;
 use crate::kad::KAD;
+use crate::seed::seed;
 use crate::udp::state::SPEED;
 use crate::util::{addr_to_bytes::ToBytes, leading_zero, now};
 use crate::var::{

@@ -43,7 +43,9 @@ num_cpus = "1.13.0"
 base64 = "0.13.0"
 smallvec = "1.6.1"
 hashbrown = "0.11.2"
-#rusqlite = { version = "0.25.3", features = ["bundled","functions"] }
+r2d2 = "0.8.9"
+r2d2_sqlite = "0.18.0"
+rusqlite = { version = "0.25.3", features = ["bundled","functions"] }
 #sqlx = { version = "0.5.7", features = ["runtime-async-std-rustls","macros","sqlite"] }
 #notify = "4.0.17"
 #bus = "2.2.3"
