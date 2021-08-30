@@ -1,5 +1,6 @@
 use crate::db::{db, TX};
 use crate::kad::KAD;
+use crate::udp::speed::SPEED;
 use crate::util::addr_to_bytes::ToBytes;
 use crate::util::bytes_to_addr;
 use crate::var::cmd::CMD;
@@ -66,6 +67,7 @@ pub async fn timer(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) {
   loop {
     sleep(duration).await;
     println!("kad len {}", KAD.read().len);
+    println!("speed {}", unsafe { SPEED.diff() });
   }
   /*
   let mut interval = stream::interval(Duration::from_secs(10));
