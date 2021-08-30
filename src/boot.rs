@@ -1,4 +1,5 @@
 //use crate::db::DB;
+use crate::db;
 use crate::util::find_port::find_port;
 use crate::{grpc, udp, ws};
 use log::{error, info};
@@ -21,6 +22,7 @@ pub fn init_sqlite() -> Result<()> {
 pub async fn boot() {
   //init_sqlite().unwrap();
   //info!("> {:?}", std::env::current_exe().unwrap().parent().unwrap());
+  // db::init().await;
   let err = futures::join!(
     listen!(udp, { format!("0.0.0.0:{}", find_port()) }),
     listen!(grpc, { "0.0.0.0:2080".to_string() }),

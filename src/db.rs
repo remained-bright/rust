@@ -1,30 +1,31 @@
 use crate::args::DIR;
 use crate::ed25519::seed_new;
-use sqlx::sqlite::SqlitePool;
 use static_init::dynamic;
+use std::fs::File;
+use std::io::{BufWriter, Read, Write};
 use std::path::{Path, PathBuf};
 
 #[dynamic]
 pub static DB_FILE: PathBuf = Path::new(&*DIR).join("rmw.db");
 
-#[dynamic]
-pub static POOL: SqlitePool = SqlitePool::connect(&*DB_FILE).await.unwrap();
+pub fn seed() -> [u8; 32] {
+  let p = Path::new(&*DIR).join("seed");
+  if p.exists() {
+    let mut data = Vec::new();
 
-pub fn seed() -> anyhow::Result<[u8; 32]> {
-  /*
-  include_bytes!("db.sql")
-    let key: ByteVec = "seed".into();
-    Ok(match TX.one::<ByteVec, ByteVec>(db::config, &key)? {
-      Some(s) => (*s).try_into().unwrap(),
-      None => {
-        let s = seed_new();
-        TX.put(db::config, key, ByteVec::new(s.to_vec()))?;
-        s
-      }
-    })
-    */
-  Ok(seed_new())
+    let mut f = File::open(&p).unwrap();
+    f.read_to_end(&mut data).unwrap();
+    if let Ok(r) = data.try_into() {
+      return r;
+    }
+  }
+  let seed = seed_new();
+  let f = File::create(&p).unwrap();
+  let mut f = BufWriter::new(f);
+  f.write_all(&seed).unwrap();
+  seed
 }
+
 pub fn ipv4_insert(addr: [u8; 6]) -> anyhow::Result<bool> {
   Ok(true)
 }

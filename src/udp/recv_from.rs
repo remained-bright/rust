@@ -71,7 +71,7 @@ pub async fn recv_from(
   let mut input = BytesMut::new();
   input.resize(*MTU, 0);
 
-  let secret = SecretKey::from_bytes(&seed()?).unwrap();
+  let secret = SecretKey::from_bytes(&seed()).unwrap();
   let signer: ExpandedSecretKey = (&secret).into();
   let public: PublicKey = (&secret).into();
   let x25519_secret: StaticSecret = secret.into();
