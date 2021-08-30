@@ -98,6 +98,7 @@ pub async fn recv_from(
               if n == 1 {
                 reply!([CMD::PONG])
               }
+              //KAD.write().add((*key).try_into().unwrap(), src);
             }
             _ => {}
           }
