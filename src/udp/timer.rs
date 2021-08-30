@@ -18,12 +18,14 @@ fn error_tip(ip: &str) {
   error!("config error : can't parse {:?} ip", ip);
 }
 
-pub async fn kad(socket: &UdpSocket) -> Result<()> {
+pub async fn kad(socket: &UdpSocket, connecting: &Cache<SocketAddrV4, u64>) -> Result<()> {
   macro_rules! send {
     ($ip:expr) => {
       info!("ping {:?}", $ip);
       if let Err(err) = socket.send_to(&[CMD::PING], $ip).await {
         info!("ipv4 ping error {}", err)
+      } else {
+        connecting.insert($ip, 0, *MSL);
       };
     };
   }
@@ -59,12 +61,12 @@ pub async fn kad(socket: &UdpSocket) -> Result<()> {
   Ok(())
 }
 
-pub async fn timer(socket: &UdpSocket) {
+pub async fn timer(socket: &UdpSocket, connecting: &Cache<SocketAddrV4, u64>) {
   // 可能网络故障导致连接失败，所以每10秒尝试一次重新连接
   let duration = Duration::from_secs(3);
   loop {
     println!("kad len {}", KAD.read().len);
-    let _ = kad(socket).await;
+    let _ = kad(socket, &connecting).await;
     sleep(duration).await;
     unsafe { SPEED.diff() }
     println!("speed {}", unsafe { SPEED.speed });

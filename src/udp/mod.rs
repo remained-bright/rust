@@ -13,15 +13,18 @@ use log::error;
 use log::info;
 use retainer::Cache;
 use static_init::dynamic;
+use std::net::SocketAddrV4;
 use std::time::Duration;
 
 #[dynamic]
-static EXPIRE: u64 = (*MSL).as_secs() + 1;
+pub static EXPIRE: u64 = (*MSL).as_secs() + 1;
 
 pub async fn listen(addr: String) -> Result<()> {
   let socket = UdpSocket::bind(addr).await?;
 
   println!("{:?}", socket.local_addr().unwrap());
+
+  let connecting = Cache::<SocketAddrV4, u64>::new();
 
   let err = futures::join!(
     (async || {
@@ -31,8 +34,8 @@ pub async fn listen(addr: String) -> Result<()> {
         }
       }
     })(),
-    timer(&socket),
-    recv_from(&socket),
+    timer(&socket, &connecting),
+    recv_from(&socket, &connecting),
     /*
     connected.monitor(2, 1, *HEARTBEAT_TIMEOUT, &|kvli| {
       if kvli.len() > 0 {
@@ -41,17 +44,15 @@ pub async fn listen(addr: String) -> Result<()> {
         }
       }
     }),
+    */
     connecting.monitor(2, 1, *MSL / 3 + Duration::from_secs(1), &|kvli| {
       //msl秒内有过成功的连接
       if kvli.len() > 0 && (now::sec() - unsafe { CONNECTED_TIME }) <= *EXPIRE {
-        for (k, _) in kvli {
-          ipv4_offline(*k)
-            .map_err(|err| error!("ipv4_offline {}", err))
-            .unwrap_or(());
+        for (addr, site_id) in kvli {
+          println!("expire ip {:?} v {:?}", addr, site_id);
         }
       }
     }),
-    */
   );
   error!("{:?}", err);
   Ok(())

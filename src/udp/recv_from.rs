@@ -15,7 +15,7 @@ use log::{error, info};
 use retainer::Cache;
 use static_init::dynamic;
 use std::hash::Hasher;
-use std::net::SocketAddr::{V4, V6};
+use std::net::SocketAddrV4;
 use twox_hash::{
   xxh3::{hash128, hash64},
   XxHash32,
@@ -58,8 +58,8 @@ pub const PUBLIC_KEY_LENGTH_13: usize = PUBLIC_KEY_LENGTH + 13;
 
 pub async fn recv_from(
   socket: &UdpSocket,
+  connecting: &Cache<SocketAddrV4, u64>,
   /*
-  connecting: &Cache<[u8; 6], ()>,
   connected: &Cache<u32, [u8; 32]>,
   */
 ) -> Result<()> {
