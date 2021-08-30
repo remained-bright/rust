@@ -64,8 +64,8 @@ pub async fn timer(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) {
   // 可能网络故障导致连接失败，所以每10秒尝试一次重新连接
   boot(socket, connecting).await;
   let duration = Duration::from_secs(3);
-  unsafe { SPEED.diff() }
   loop {
+    unsafe { SPEED.diff() }
     sleep(duration).await;
     println!("kad len {}", KAD.read().len);
     println!("speed {}", unsafe { SPEED.speed });
