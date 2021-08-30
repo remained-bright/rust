@@ -3,7 +3,6 @@ mod state;
 mod timer;
 mod upnp;
 
-use crate::db::ipv4_offline;
 use crate::udp::recv_from::{recv_from, CONNECTED_TIME};
 use crate::udp::timer::timer;
 use crate::util::now;
@@ -20,8 +19,6 @@ use std::time::Duration;
 static EXPIRE: u64 = (*MSL).as_secs() + 1;
 
 pub async fn listen(addr: String) -> Result<()> {
-  let connected = Cache::<u32, [u8; 32]>::new();
-  let connecting = Cache::<[u8; 6], ()>::new();
   let socket = UdpSocket::bind(addr).await?;
 
   println!("{:?}", socket.local_addr().unwrap());
@@ -34,8 +31,9 @@ pub async fn listen(addr: String) -> Result<()> {
         }
       }
     })(),
-    timer(&socket, &connecting),
-    recv_from(&socket, &connecting, &connected),
+    timer(&socket),
+    recv_from(&socket),
+    /*
     connected.monitor(2, 1, *HEARTBEAT_TIMEOUT, &|kvli| {
       if kvli.len() > 0 {
         for (k, v) in kvli {
@@ -53,6 +51,7 @@ pub async fn listen(addr: String) -> Result<()> {
         }
       }
     }),
+    */
   );
   error!("{:?}", err);
   Ok(())

@@ -1,10 +1,12 @@
 //use crate::db::{db, TX};
+use crate::db::POOL;
 use crate::kad::KAD;
 use crate::udp::state::SPEED;
 use crate::util::addr_to_bytes::ToBytes;
 use crate::util::bytes_to_addr;
 use crate::var::cmd::CMD;
 use crate::var::duration::MSL;
+use anyhow::Result;
 use async_std::net::UdpSocket;
 use async_std::task::sleep;
 use log::{error, info};
@@ -16,7 +18,7 @@ fn error_tip(ip: &str) {
   error!("config error : can't parse {:?} ip", ip);
 }
 
-pub async fn boot(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) {
+pub async fn kad(socket: &UdpSocket) -> Result<()> {
   macro_rules! send {
     ($ip:expr) => {
       info!("ping {:?}", $ip);
@@ -28,6 +30,7 @@ pub async fn boot(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) {
       };
     };
   }
+
   /*
     for (n, (_, li)) in TX
       .range::<u64, [u8; 6], _>(db::time_ipv4, ..)
@@ -58,16 +61,17 @@ pub async fn boot(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) {
       }
     }
   */
+  Ok(())
 }
 
-pub async fn timer(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) {
+pub async fn timer(socket: &UdpSocket) {
   // 可能网络故障导致连接失败，所以每10秒尝试一次重新连接
-  boot(socket, connecting).await;
   let duration = Duration::from_secs(3);
   loop {
-    unsafe { SPEED.diff() }
-    sleep(duration).await;
     println!("kad len {}", KAD.read().len);
+    let _ = kad(socket).await;
+    sleep(duration).await;
+    unsafe { SPEED.diff() }
     println!("speed {}", unsafe { SPEED.speed });
   }
   /*

@@ -1,7 +1,9 @@
 use crate::args::DIR;
+use crate::kad::BUCKET_SIZE;
 use anyhow::Result;
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
+use rusqlite::params;
 use static_init::dynamic;
 use std::include_bytes;
 use std::path::{Path, PathBuf};
@@ -19,20 +21,32 @@ pub fn init() -> Result<()> {
     == c.query_row(
       "SELECT count(1) FROM sqlite_master WHERE type='table'",
       [],
-      |row| row.get(0),
+      |row| row.get::<_, usize>(0),
     )?
   {
-    println!("{}", &include_bytes!("db.sql"));
+    c.execute_batch(&unsafe { String::from_utf8_unchecked(include_bytes!("db.sql").to_vec()) })?;
   }
   Ok(())
 }
 
-pub fn ipv4_insert(addr: [u8; 6]) -> anyhow::Result<bool> {
-  Ok(true)
+pub fn site_ipv4(site_id: u64) -> Result<Vec<[u8; 6]>> {
+  let vec = Vec::new();
+  let c = POOL.get()?;
+  let mut q = c.prepare(
+    format!(
+      "select ip,port from site_ipv4 where site_id=? order by rank limit {}",
+      BUCKET_SIZE
+    )
+    .as_str(),
+  )?;
+  let mut iter = q.query(params![site_id])?;
+  while let Some(row) = iter.next()? {
+    println!("{} {}", row.get::<_, u32>(0)?, row.get::<_, u16>(1)?);
+  }
+
+  Ok(vec)
 }
-pub fn ipv4_offline(addr: [u8; 6]) -> anyhow::Result<()> {
-  Ok(())
-}
+
 /*
 use crate::args::DIR;
 use crate::util::now;

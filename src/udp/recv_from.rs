@@ -1,4 +1,3 @@
-use crate::db::ipv4_insert;
 use crate::kad::KAD;
 use crate::seed::seed;
 use crate::udp::state::SPEED;
@@ -59,8 +58,10 @@ pub const PUBLIC_KEY_LENGTH_13: usize = PUBLIC_KEY_LENGTH + 13;
 
 pub async fn recv_from(
   socket: &UdpSocket,
+  /*
   connecting: &Cache<[u8; 6], ()>,
   connected: &Cache<u32, [u8; 32]>,
+  */
 ) -> Result<()> {
   macro_rules! send_to {
     ($val:expr, $addr:expr) => {
@@ -94,6 +95,18 @@ pub async fn recv_from(
         match src {
           V4(src) => {
             if n > 0 {
+              unsafe { SPEED.incr(n) };
+            }
+          }
+          _ => {}
+        }
+      }
+    }
+  }
+}
+
+/*
+
               match input[0] {
                 CMD::PING => reply!([CMD::PONG]),
                 CMD::PONG => {
@@ -229,12 +242,5 @@ pub async fn recv_from(
                   continue;
                 }
               }
-              unsafe { SPEED.incr(n) };
-            }
-          }
-          _ => {}
-        }
-      }
-    }
-  }
-}
+
+*/
