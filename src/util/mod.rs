@@ -4,3 +4,4 @@ pub mod find_port;
 pub mod leading_zero;
 pub mod now;
 pub mod same_prefix;
+pub mod speed;
