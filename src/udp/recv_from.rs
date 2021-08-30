@@ -94,7 +94,11 @@ pub async fn recv_from(
 
         if n > 0 {
           match input[0] {
-            CMD::PING => reply!([CMD::PONG]),
+            CMD::PING => {
+              if n == 1 {
+                reply!([CMD::PONG])
+              }
+            }
             _ => {}
           }
           unsafe { SPEED.incr(n) };

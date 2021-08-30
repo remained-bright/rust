@@ -55,6 +55,7 @@ pub async fn kad(socket: &UdpSocket) -> Result<()> {
       _ => error_tip(ip),
     }
   }
+
   Ok(())
 }
 
