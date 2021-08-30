@@ -19,6 +19,10 @@ fn error_tip(ip: &str) {
 }
 
 pub async fn kad(socket: &UdpSocket, connecting: &Cache<SocketAddrV4, u64>) -> Result<()> {
+  if KAD.read().len > 0 {
+    return Ok(());
+  }
+
   macro_rules! send {
     ($ip:expr) => {
       info!("ping {:?}", $ip);
