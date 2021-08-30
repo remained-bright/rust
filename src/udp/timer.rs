@@ -1,6 +1,6 @@
 use crate::db::{db, TX};
 use crate::kad::KAD;
-use crate::udp::speed::SPEED;
+use crate::udp::state::SPEED;
 use crate::util::addr_to_bytes::ToBytes;
 use crate::util::bytes_to_addr;
 use crate::var::cmd::CMD;
