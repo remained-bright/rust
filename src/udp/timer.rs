@@ -68,7 +68,7 @@ pub async fn timer(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) {
   loop {
     sleep(duration).await;
     println!("kad len {}", KAD.read().len);
-    println!("speed {}", SPEED.speed);
+    println!("speed {}", unsafe { SPEED.speed });
   }
   /*
   let mut interval = stream::interval(Duration::from_secs(10));
