@@ -29,7 +29,7 @@ async-tungstenite = "0.14.0"
 futures = "0.3.16"
 rust-ini = "0.17.0"
 anyhow = "1.0.43"
-thiserror = "1.0.26"
+thiserror = "1.0.28"
 prost = "0.8.0"
 async-trait = "0.1.51"
 twox-hash = "1.6.1"
@@ -43,7 +43,8 @@ num_cpus = "1.13.0"
 base64 = "0.13.0"
 smallvec = "1.6.1"
 hashbrown = "0.11.2"
-rusqlite = { version = "0.25.3", features = ["bundled","functions"] }
+#rusqlite = { version = "0.25.3", features = ["bundled","functions"] }
+sqlx = { version = "0.5.7", features = ["runtime-async-std-rustls","macros","sqlite"] }
 #notify = "4.0.17"
 #bus = "2.2.3"
 #lru_time_cache = "0.11.11"
@@ -70,7 +71,6 @@ rusqlite = { version = "0.25.3", features = ["bundled","functions"] }
 #indexmap = "1.6.1"
 #x25519-dalek = { version = "1.1.0", features = ["serde"] }
 #aes-gcm = "0.8.0"
-#sqlx = { version = "0.5.1", features = ["runtime-async-std-rustls","macros","sqlite"] }
 #hnsw = "0.6.1"
 #array-init = "1.0.0"
 #skiplist = "0.3.0"
@@ -82,7 +82,7 @@ rusqlite = { version = "0.25.3", features = ["bundled","functions"] }
 
 
 [dependencies.async-std]
-version = "1.9.0"
+version = "1.10.0"
 features = ["unstable","attributes","tokio1"]
 
 [build-dependencies]

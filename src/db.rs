@@ -1,9 +1,40 @@
 use crate::args::DIR;
 use crate::ed25519::seed_new;
-use crate::util::now;
-use anyhow::Result;
-pub use persy::{ByteVec, Config, Persy, ValueMode};
+use sqlx::sqlite::SqlitePool;
 use static_init::dynamic;
+use std::path::{Path, PathBuf};
+
+#[dynamic]
+pub static DB_FILE: PathBuf = Path::new(&*DIR).join("rmw.db");
+
+#[dynamic]
+pub static POOL: SqlitePool = SqlitePool::connect(&*DB_FILE).await.unwrap();
+
+pub fn seed() -> anyhow::Result<[u8; 32]> {
+  /*
+  include_bytes!("db.sql")
+    let key: ByteVec = "seed".into();
+    Ok(match TX.one::<ByteVec, ByteVec>(db::config, &key)? {
+      Some(s) => (*s).try_into().unwrap(),
+      None => {
+        let s = seed_new();
+        TX.put(db::config, key, ByteVec::new(s.to_vec()))?;
+        s
+      }
+    })
+    */
+  Ok(seed_new())
+}
+pub fn ipv4_insert(addr: [u8; 6]) -> anyhow::Result<bool> {
+  Ok(true)
+}
+pub fn ipv4_offline(addr: [u8; 6]) -> anyhow::Result<()> {
+  Ok(())
+}
+/*
+use crate::args::DIR;
+use crate::util::now;
+pub use persy::{ByteVec, Config, Persy, ValueMode};
 use std::path::{Path, PathBuf};
 
 #[dynamic]
@@ -84,3 +115,4 @@ pub fn ipv4_offline(addr: [u8; 6]) -> Result<()> {
   tx.commit()?;
   Ok(())
 }
+*/

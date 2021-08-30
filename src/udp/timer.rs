@@ -1,4 +1,4 @@
-use crate::db::{db, TX};
+//use crate::db::{db, TX};
 use crate::kad::KAD;
 use crate::udp::state::SPEED;
 use crate::util::addr_to_bytes::ToBytes;
@@ -28,36 +28,36 @@ pub async fn boot(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) {
       };
     };
   }
-
-  for (n, (_, li)) in TX
-    .range::<u64, [u8; 6], _>(db::time_ipv4, ..)
-    .unwrap()
-    .enumerate()
-  {
-    for ipv4 in li {
-      let ipv4 = bytes_to_addr::v4(ipv4);
-      send!(ipv4);
-    }
-    if n == 128 {
-      return;
-    }
-  }
-
-  for ip in (config_get!(boot_ipv4, {
-    "47.104.79.244:32342 54.177.127.37:8616".to_string()
-  }))
-  .split(' ')
-  {
-    match SocketAddrV4::from_str(ip) {
-      Ok(v4) => {
-        if let Some(_) = TX.one::<_, u64>(db::ipv4_time, &v4.to_bytes()).unwrap() {
-          continue;
-        }
-        send!(v4);
+  /*
+    for (n, (_, li)) in TX
+      .range::<u64, [u8; 6], _>(db::time_ipv4, ..)
+      .unwrap()
+      .enumerate()
+    {
+      for ipv4 in li {
+        let ipv4 = bytes_to_addr::v4(ipv4);
+        send!(ipv4);
       }
-      _ => error_tip(ip),
+      if n == 128 {
+        return;
+      }
     }
-  }
+    for ip in (config_get!(boot_ipv4, {
+      "47.104.79.244:32342 54.177.127.37:8616".to_string()
+    }))
+    .split(' ')
+    {
+      match SocketAddrV4::from_str(ip) {
+        Ok(v4) => {
+          if let Some(_) = TX.one::<_, u64>(db::ipv4_time, &v4.to_bytes()).unwrap() {
+            continue;
+          }
+          send!(v4);
+        }
+        _ => error_tip(ip),
+      }
+    }
+  */
 }
 
 pub async fn timer(socket: &UdpSocket, connecting: &Cache<[u8; 6], ()>) {
