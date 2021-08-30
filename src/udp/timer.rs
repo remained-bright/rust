@@ -25,7 +25,7 @@ pub async fn kad(socket: &UdpSocket, connecting: &Cache<SocketAddrV4, u64>) -> R
       if let Err(err) = socket.send_to(&[CMD::PING], $ip).await {
         info!("ipv4 ping error {}", err)
       } else {
-        connecting.insert($ip, 0, *MSL);
+        connecting.insert($ip, 0, *MSL).await;
       };
     };
   }
@@ -51,8 +51,8 @@ pub async fn kad(socket: &UdpSocket, connecting: &Cache<SocketAddrV4, u64>) -> R
   .split(' ')
   {
     match SocketAddrV4::from_str(ip) {
-      Ok(v4) => {
-        send!(v4);
+      Ok(ip) => {
+        send!(ip);
       }
       _ => error_tip(ip),
     }

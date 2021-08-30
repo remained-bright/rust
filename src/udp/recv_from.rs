@@ -15,6 +15,7 @@ use log::{error, info};
 use retainer::Cache;
 use static_init::dynamic;
 use std::hash::Hasher;
+use std::net::SocketAddr::{V4, V6};
 use std::net::SocketAddrV4;
 use twox_hash::{
   xxh3::{hash128, hash64},
@@ -73,11 +74,12 @@ pub async fn recv_from(
   input.resize(*MTU, 0);
 
   let secret = SecretKey::from_bytes(&seed()).unwrap();
-  let signer: ExpandedSecretKey = (&secret).into();
+  //let signer: ExpandedSecretKey = (&secret).into();
   let public: PublicKey = (&secret).into();
   let x25519_secret: StaticSecret = secret.into();
   let public_bytes = &public.as_bytes()[..PUBLIC_KEY_LENGTH];
-  let cmd_key = [&[CMD::KEY], public_bytes].concat();
+  let cmd_ping_key = [&[CMD::PING], public_bytes].concat();
+  let cmd_pong_key = [&[CMD::PONG], public_bytes].concat();
 
   loop {
     match socket.recv_from(&mut input).await {
@@ -93,14 +95,34 @@ pub async fn recv_from(
         }
 
         if n > 0 {
-          match input[0] {
-            CMD::PING => {
-              if n == 1 {
-                reply!([CMD::PONG])
+          match src {
+            V4(src) => match input[0] {
+              CMD::PING => {
+                if n == 1 {
+                  reply!([CMD::PONG])
+                } else if n == PUBLIC_KEY_LENGTH_1 {
+                  let key = &input[1..];
+                  if key != public_bytes {
+                    reply!(cmd_pong_key)
+                  }
+                }
               }
-              //KAD.write().add((*key).try_into().unwrap(), src);
-            }
-            _ => {}
+              CMD::PONG => {
+                if n == 1 {
+                  if connecting.renew(&src, *MSL).await {
+                    reply!(cmd_ping_key)
+                  }
+                } else if n == PUBLIC_KEY_LENGTH_1 {
+                  if let Some(_) = connecting.expiration(&src).await {
+                    let key = &input[1..];
+                    KAD.write().add(key.try_into().unwrap(), src);
+                    connecting.remove(&src).await;
+                  }
+                }
+              }
+              _ => {}
+            },
+            V6(_) => {}
           }
           unsafe { SPEED.incr(n) };
         }
