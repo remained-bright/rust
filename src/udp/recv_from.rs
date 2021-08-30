@@ -1,7 +1,7 @@
 use crate::db::ipv4_insert;
 use crate::db::seed;
 use crate::kad::KAD;
-use crate::util::addr_to_bytes::ToBytes;
+use crate::util::{addr_to_bytes::ToBytes, speed::Speed};
 use crate::util::{leading_zero, now};
 use crate::var::{
   cmd::CMD,
@@ -37,6 +37,8 @@ use xxblake3::{decrypt, encrypt};
     }
   }
 */
+
+static mut SPEED: Speed = Speed { now: 0, pre: 0 };
 
 #[dynamic]
 pub static MTU: usize = {
@@ -226,8 +228,10 @@ pub async fn recv_from(
                 }
                 _ => {
                   info!("{}  > {} : {:?}", src, input[0], &input[1..]);
+                  continue;
                 }
               }
+              unsafe { SPEED.incr(n) };
             }
           }
           _ => {}
