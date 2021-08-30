@@ -15,7 +15,7 @@ use log::{error, info};
 use retainer::Cache;
 use static_init::dynamic;
 use std::hash::Hasher;
-use std::net::SocketAddr::V4;
+use std::net::SocketAddr::{V4, V6};
 use twox_hash::{
   xxh3::{hash128, hash64},
   XxHash32,
@@ -92,13 +92,12 @@ pub async fn recv_from(
           };
         }
 
-        match src {
-          V4(src) => {
-            if n > 0 {
-              unsafe { SPEED.incr(n) };
-            }
+        if n > 0 {
+          match input[0] {
+            CMD::PING => reply!([CMD::PONG]),
+            _ => {}
           }
-          _ => {}
+          unsafe { SPEED.incr(n) };
         }
       }
     }

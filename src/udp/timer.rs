@@ -22,11 +22,8 @@ pub async fn kad(socket: &UdpSocket) -> Result<()> {
   macro_rules! send {
     ($ip:expr) => {
       info!("ping {:?}", $ip);
-      match socket.send_to(&[CMD::PING], $ip).await {
-        Err(err) => info!("ipv4 ping error {}", err),
-        Ok(_) => {
-          connecting.insert($ip.to_bytes(), (), *MSL).await;
-        }
+      if let Err(err) = socket.send_to(&[CMD::PING], $ip).await {
+        info!("ipv4 ping error {}", err)
       };
     };
   }
@@ -45,22 +42,19 @@ pub async fn kad(socket: &UdpSocket) -> Result<()> {
         return;
       }
     }
-    for ip in (config_get!(boot_ipv4, {
-      "47.104.79.244:32342 54.177.127.37:8616".to_string()
-    }))
-    .split(' ')
-    {
-      match SocketAddrV4::from_str(ip) {
-        Ok(v4) => {
-          if let Some(_) = TX.one::<_, u64>(db::ipv4_time, &v4.to_bytes()).unwrap() {
-            continue;
-          }
-          send!(v4);
-        }
-        _ => error_tip(ip),
-      }
-    }
   */
+  for ip in (config_get!(boot_ipv4, {
+    "47.104.79.244:32342 54.177.127.37:8616".to_string()
+  }))
+  .split(' ')
+  {
+    match SocketAddrV4::from_str(ip) {
+      Ok(v4) => {
+        send!(v4);
+      }
+      _ => error_tip(ip),
+    }
+  }
   Ok(())
 }
 
