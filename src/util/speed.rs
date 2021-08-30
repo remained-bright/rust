@@ -1,20 +1,20 @@
 #[derive(Default)]
 pub struct Speed {
   pub pre: usize,
-  pub now: usize,
+  pub n: usize,
+  pub speed: usize,
 }
 
 impl Speed {
   pub fn incr(&mut self, n: usize) {
-    self.now = self.now.wrapping_add(n);
+    self.n = self.n.wrapping_add(n);
   }
-  pub fn diff(&mut self) -> usize {
-    let n = if self.now > self.pre {
-      self.now - self.pre
+  pub fn diff(&mut self) {
+    self.speed = if self.n < self.pre {
+      self.n + (usize::MAX - self.pre)
     } else {
-      self.now + (usize::MAX - self.pre)
+      self.n - self.pre
     };
-    self.pre = self.now;
-    n
+    self.pre = self.n;
   }
 }
