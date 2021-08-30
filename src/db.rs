@@ -13,16 +13,15 @@ pub fn seed() -> [u8; 32] {
   if p.exists() {
     let mut data = Vec::new();
 
-    let mut f = File::open(&p).unwrap();
-    f.read_to_end(&mut data).unwrap();
+    File::open(&p).unwrap().read_to_end(&mut data).unwrap();
     if let Ok(r) = data.try_into() {
       return r;
     }
   }
   let seed = seed_new();
-  let f = File::create(&p).unwrap();
-  let mut f = BufWriter::new(f);
-  f.write_all(&seed).unwrap();
+  BufWriter::new(File::create(&p).unwrap())
+    .write_all(&seed)
+    .unwrap();
   seed
 }
 
